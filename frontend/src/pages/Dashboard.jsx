@@ -5,6 +5,7 @@ import CredentialForm from '../components/CredentialForm'
 import CredentialList from '../components/CredentialList'
 import FolderManager from '../components/FolderManager'
 import UserManager from '../components/UserManager'
+import Toast from '../components/Toast'
 
 const Dashboard = () => {
   const { user, logout } = useAuth()
@@ -15,6 +16,11 @@ const Dashboard = () => {
   const [editingCredential, setEditingCredential] = useState(null)
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('credentials')
+  const [toast, setToast] = useState(null)
+
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type })
+  }
 
   useEffect(() => {
     fetchCredentials()
@@ -63,16 +69,23 @@ const Dashboard = () => {
 
     try {
       await api.delete(`/credentials/${id}`)
+      showToast('Credential deleted successfully!', 'success')
       fetchCredentials()
     } catch (error) {
-      alert('Failed to delete credential')
+      showToast('Failed to delete credential', 'error')
     }
   }
 
-  const handleFormClose = () => {
+  const handleFormClose = (success, action) => {
     setShowForm(false)
     setEditingCredential(null)
-    fetchCredentials()
+    if (success) {
+      const message = action === 'create' 
+        ? '✨ Credential created successfully!' 
+        : '✏️ Credential updated successfully!'
+      showToast(message, 'success')
+      fetchCredentials()
+    }
   }
 
   const filteredCredentials = selectedFolder 
@@ -210,6 +223,14 @@ const Dashboard = () => {
             credential={editingCredential}
             folders={folders}
             onClose={handleFormClose}
+          />
+        )}
+
+        {toast && (
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            onClose={() => setToast(null)}
           />
         )}
       </main>

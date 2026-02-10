@@ -36,15 +36,15 @@ const CredentialForm = ({ credential, folders, onClose }) => {
     setLoading(true)
 
     try {
+      const action = credential ? 'update' : 'create'
       if (credential) {
         await api.put(`/credentials/${credential.id}`, formData)
       } else {
         await api.post('/credentials', formData)
       }
-      onClose()
+      onClose(true, action) // Pass success and action type
     } catch (err) {
       setError(err.response?.data?.error || 'Operation failed')
-    } finally {
       setLoading(false)
     }
   }
@@ -142,7 +142,7 @@ const CredentialForm = ({ credential, folders, onClose }) => {
             </button>
             <button
               type="button"
-              onClick={onClose}
+              onClick={() => onClose(false)}
               className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400"
             >
               Cancel
