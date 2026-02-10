@@ -42,7 +42,7 @@ A full-stack credential management application with folder-based permissions and
 - Docker and Docker Compose
 - Git
 
-### Installation
+### Quick Start (Local Development)
 
 1. Clone the repository:
 ```bash
@@ -72,6 +72,35 @@ docker-compose up -d
 5. Access the application:
    - Frontend: http://localhost:5173
    - Backend API: http://localhost:8080
+
+### Quick Deployment (AWS EC2)
+
+**Minimum steps:**
+```bash
+# 1. Install Docker and Docker Compose on EC2
+sudo apt update
+sudo apt install -y docker.io
+sudo systemctl start docker
+sudo usermod -aG docker $USER
+
+# 2. Clone and configure
+git clone https://github.com/yourusername/credential-store.git
+cd credential-store
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
+
+# 3. Update frontend/.env with your EC2 IP
+nano frontend/.env
+# Change: VITE_API_URL=http://YOUR_EC2_IP:8080/api
+
+# 4. Deploy
+chmod +x deploy.sh
+./deploy.sh
+```
+
+**That's it!** Access at `http://YOUR_EC2_IP:5173`
+
+📖 For detailed deployment guide including Nginx, SSL, and security hardening, see [DEPLOYMENT.md](DEPLOYMENT.md)
 
 ### Default User Accounts
 
