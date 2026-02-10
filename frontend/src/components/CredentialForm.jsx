@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import api from '../services/api'
 
-const CredentialForm = ({ credential, folders, onClose }) => {
+const CredentialForm = ({ credential, folders, onClose, isDark }) => {
   const [formData, setFormData] = useState({
     folder_id: null,
     service_name: '',
@@ -51,26 +51,36 @@ const CredentialForm = ({ credential, folders, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="bg-gray-800 border border-gray-700 rounded-xl max-w-md w-full p-6 shadow-2xl">
-        <h3 className="text-2xl font-bold mb-6 text-white">
+      <div className={`rounded-xl max-w-md w-full p-6 shadow-2xl border ${
+        isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+      }`}>
+        <h3 className={`text-2xl font-bold mb-6 ${isDark ? 'text-white' : 'text-gray-900'}`}>
           {credential ? 'Edit Credential' : 'New Credential'}
         </h3>
 
         {error && (
-          <div className="bg-red-900/50 border border-red-800 text-red-200 px-4 py-3 rounded-lg mb-4 text-sm">
+          <div className={`px-4 py-3 rounded-lg mb-4 text-sm border ${
+            isDark 
+              ? 'bg-red-900/50 border-red-800 text-red-200' 
+              : 'bg-red-50 border-red-200 text-red-800'
+          }`}>
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label className="block text-gray-300 text-sm font-semibold mb-2">
+            <label className={`block text-sm font-semibold mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
               Environment *
             </label>
             <select
               value={formData.folder_id || ''}
               onChange={(e) => setFormData({ ...formData, folder_id: e.target.value ? parseInt(e.target.value) : null })}
-              className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white"
+              className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                isDark 
+                  ? 'bg-gray-900 border-gray-700 text-white' 
+                  : 'bg-white border-gray-300 text-gray-900'
+              }`}
               required
             >
               {folders?.map(folder => (
@@ -82,55 +92,71 @@ const CredentialForm = ({ credential, folders, onClose }) => {
           </div>
 
           <div className="mb-4">
-            <label className="block text-gray-300 text-sm font-semibold mb-2">
+            <label className={`block text-sm font-semibold mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
               Service Name *
             </label>
             <input
               type="text"
               value={formData.service_name}
               onChange={(e) => setFormData({ ...formData, service_name: e.target.value })}
-              className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-500"
+              className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                isDark 
+                  ? 'bg-gray-900 border-gray-700 text-white placeholder-gray-500' 
+                  : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
+              }`}
               placeholder="e.g., AWS Console, GitHub"
               required
             />
           </div>
 
           <div className="mb-4">
-            <label className="block text-gray-300 text-sm font-semibold mb-2">
+            <label className={`block text-sm font-semibold mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
               Username *
             </label>
             <input
               type="text"
               value={formData.username}
               onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-              className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-500"
+              className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                isDark 
+                  ? 'bg-gray-900 border-gray-700 text-white placeholder-gray-500' 
+                  : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
+              }`}
               placeholder="Enter username or email"
               required
             />
           </div>
 
           <div className="mb-4">
-            <label className="block text-gray-300 text-sm font-semibold mb-2">
+            <label className={`block text-sm font-semibold mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
               Password *
             </label>
             <input
               type="password"
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-500"
+              className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                isDark 
+                  ? 'bg-gray-900 border-gray-700 text-white placeholder-gray-500' 
+                  : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
+              }`}
               placeholder="Enter password"
               required
             />
           </div>
 
           <div className="mb-6">
-            <label className="block text-gray-300 text-sm font-semibold mb-2">
+            <label className={`block text-sm font-semibold mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
               Notes
             </label>
             <textarea
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-500"
+              className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                isDark 
+                  ? 'bg-gray-900 border-gray-700 text-white placeholder-gray-500' 
+                  : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
+              }`}
               rows="3"
               placeholder="Additional information (optional)"
             />
@@ -147,7 +173,11 @@ const CredentialForm = ({ credential, folders, onClose }) => {
             <button
               type="button"
               onClick={() => onClose(false)}
-              className="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-3 px-4 rounded-lg transition-colors duration-200 font-semibold border border-gray-600"
+              className={`flex-1 py-3 px-4 rounded-lg transition-colors duration-200 font-semibold border ${
+                isDark 
+                  ? 'bg-gray-700 hover:bg-gray-600 text-white border-gray-600' 
+                  : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border-gray-300'
+              }`}
             >
               Cancel
             </button>

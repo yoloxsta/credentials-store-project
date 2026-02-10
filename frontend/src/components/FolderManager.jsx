@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import api from '../services/api'
 
-const FolderManager = ({ folders, onUpdate }) => {
+const FolderManager = ({ folders, onUpdate, isDark }) => {
   const [editingFolder, setEditingFolder] = useState(null)
   const [permissions, setPermissions] = useState({})
 
@@ -47,34 +47,38 @@ const FolderManager = ({ folders, onUpdate }) => {
   return (
     <div>
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-white">Folder Management</h2>
-        <p className="text-sm text-gray-400 mt-1">Configure folder permissions for user groups</p>
+        <h2 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Folder Management</h2>
+        <p className={`text-sm mt-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Configure folder permissions for user groups</p>
       </div>
 
       {!folders || folders.length === 0 ? (
-        <div className="bg-gray-800 border border-gray-700 rounded-xl p-12 text-center">
-          <svg className="w-16 h-16 text-gray-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className={`rounded-xl p-12 text-center border ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+          <svg className={`w-16 h-16 mx-auto mb-4 ${isDark ? 'text-gray-600' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
           </svg>
-          <p className="text-gray-400 text-lg">No folders found</p>
+          <p className={`text-lg ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>No folders found</p>
         </div>
       ) : (
         <div className="grid gap-4">
           {folders.map((folder) => (
-          <div key={folder.id} className="bg-gray-800 border border-gray-700 rounded-xl p-6">
+          <div key={folder.id} className={`rounded-xl p-6 border ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
             <div className="flex justify-between items-start mb-4">
               <div>
-                <h3 className="text-xl font-bold text-white flex items-center space-x-2">
+                <h3 className={`text-xl font-bold flex items-center space-x-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                   </svg>
                   <span>{folder.name}</span>
                 </h3>
-                <p className="text-sm text-gray-400 mt-1">Environment folder</p>
+                <p className={`text-sm mt-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Environment folder</p>
               </div>
               <button
                 onClick={() => handleEdit(folder)}
-                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors duration-200 text-sm font-medium border border-gray-600"
+                className={`px-4 py-2 rounded-lg transition-colors duration-200 text-sm font-medium border ${
+                  isDark 
+                    ? 'bg-gray-700 hover:bg-gray-600 text-white border-gray-600' 
+                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border-gray-300'
+                }`}
               >
                 Edit Permissions
               </button>

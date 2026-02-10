@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
+import { useTheme } from '../context/ThemeContext'
 import api from '../services/api'
 import CredentialForm from '../components/CredentialForm'
 import CredentialList from '../components/CredentialList'
@@ -9,6 +10,7 @@ import Toast from '../components/Toast'
 
 const Dashboard = () => {
   const { user, logout } = useAuth()
+  const { isDark, toggleTheme } = useTheme()
   const [credentials, setCredentials] = useState([])
   const [folders, setFolders] = useState([])
   const [selectedFolder, setSelectedFolder] = useState(null)
@@ -93,9 +95,9 @@ const Dashboard = () => {
     : []
 
   return (
-    <div className="min-h-screen bg-gray-900">
+    <div className={`min-h-screen ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
       {/* Top Navigation Bar */}
-      <nav className="bg-gray-800 border-b border-gray-700 shadow-xl">
+      <nav className={`${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border-b shadow-xl`}>
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
             <div className="flex items-center space-x-3">
@@ -105,25 +107,52 @@ const Dashboard = () => {
                 </svg>
               </div>
               <div>
-                <h1 className="text-xl font-bold text-white">Credential Vault</h1>
-                <p className="text-xs text-gray-400">Enterprise Security Platform</p>
+                <h1 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Credential Vault</h1>
+                <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Enterprise Security Platform</p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
+              <button
+                onClick={toggleTheme}
+                className={`p-2 rounded-lg transition-colors duration-200 ${
+                  isDark 
+                    ? 'bg-gray-700 hover:bg-gray-600 text-yellow-400' 
+                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                }`}
+                title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+              >
+                {isDark ? (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                  </svg>
+                )}
+              </button>
               <div className="text-right">
-                <p className="text-sm font-medium text-white">{user?.email}</p>
+                <p className={`text-sm font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{user?.email}</p>
                 <div className="flex items-center justify-end space-x-2">
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-900 text-blue-200">
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                    isDark ? 'bg-blue-900 text-blue-200' : 'bg-blue-100 text-blue-800'
+                  }`}>
                     {user?.role}
                   </span>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-900 text-purple-200">
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                    isDark ? 'bg-purple-900 text-purple-200' : 'bg-purple-100 text-purple-800'
+                  }`}>
                     {user?.user_group}
                   </span>
                 </div>
               </div>
               <button
                 onClick={logout}
-                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors duration-200 text-sm font-medium border border-gray-600"
+                className={`px-4 py-2 rounded-lg transition-colors duration-200 text-sm font-medium border ${
+                  isDark 
+                    ? 'bg-gray-700 hover:bg-gray-600 text-white border-gray-600' 
+                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border-gray-300'
+                }`}
               >
                 Sign Out
               </button>
@@ -134,13 +163,17 @@ const Dashboard = () => {
 
       <main className="max-w-7xl mx-auto px-6 lg:px-8 py-8">
         {/* Tab Navigation */}
-        <div className="flex space-x-1 mb-8 bg-gray-800 p-1.5 rounded-xl border border-gray-700">
+        <div className={`flex space-x-1 mb-8 p-1.5 rounded-xl border ${
+          isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+        }`}>
           <button
             onClick={() => setActiveTab('credentials')}
             className={`flex-1 px-6 py-3 rounded-lg font-medium transition-all duration-200 text-sm ${
               activeTab === 'credentials' 
                 ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg' 
-                : 'text-gray-400 hover:text-white hover:bg-gray-700'
+                : isDark 
+                  ? 'text-gray-400 hover:text-white hover:bg-gray-700'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
             }`}
           >
             <div className="flex items-center justify-center space-x-2">
@@ -157,7 +190,9 @@ const Dashboard = () => {
                 className={`flex-1 px-6 py-3 rounded-lg font-medium transition-all duration-200 text-sm ${
                   activeTab === 'folders' 
                     ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg' 
-                    : 'text-gray-400 hover:text-white hover:bg-gray-700'
+                    : isDark 
+                      ? 'text-gray-400 hover:text-white hover:bg-gray-700'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                 }`}
               >
                 <div className="flex items-center justify-center space-x-2">
@@ -172,7 +207,9 @@ const Dashboard = () => {
                 className={`flex-1 px-6 py-3 rounded-lg font-medium transition-all duration-200 text-sm ${
                   activeTab === 'users' 
                     ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg' 
-                    : 'text-gray-400 hover:text-white hover:bg-gray-700'
+                    : isDark 
+                      ? 'text-gray-400 hover:text-white hover:bg-gray-700'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                 }`}
               >
                 <div className="flex items-center justify-center space-x-2">
@@ -190,7 +227,9 @@ const Dashboard = () => {
           <>
             {/* Folder Filter */}
             <div className="mb-8">
-              <h3 className="text-sm font-semibold text-gray-400 mb-4 uppercase tracking-wider">Environment</h3>
+              <h3 className={`text-sm font-semibold mb-4 uppercase tracking-wider ${
+                isDark ? 'text-gray-400' : 'text-gray-600'
+              }`}>Environment</h3>
               <div className="flex flex-wrap gap-3">
                 {folders && folders.length > 0 ? (
                   folders.map(folder => (
@@ -200,7 +239,9 @@ const Dashboard = () => {
                       className={`px-6 py-3 rounded-lg font-medium transition-all duration-200 border ${
                         selectedFolder?.id === folder.id 
                           ? 'bg-blue-600 text-white border-blue-500 shadow-lg shadow-blue-500/50' 
-                          : 'bg-gray-800 text-gray-300 border-gray-700 hover:border-gray-600 hover:bg-gray-750'
+                          : isDark
+                            ? 'bg-gray-800 text-gray-300 border-gray-700 hover:border-gray-600 hover:bg-gray-750'
+                            : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400 hover:bg-gray-50'
                       }`}
                     >
                       <div className="flex items-center space-x-2">
@@ -212,17 +253,17 @@ const Dashboard = () => {
                     </button>
                   ))
                 ) : (
-                  <p className="text-gray-400">No folders available</p>
+                  <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>No folders available</p>
                 )}
               </div>
             </div>
 
             <div className="flex justify-between items-center mb-6">
               <div>
-                <h2 className="text-2xl font-bold text-white">
+                <h2 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
                   {selectedFolder ? selectedFolder.name : 'Credentials'}
                 </h2>
-                <p className="text-sm text-gray-400 mt-1">
+                <p className={`text-sm mt-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                   {selectedFolder ? `Manage ${selectedFolder.name} environment credentials` : 'Select an environment'}
                 </p>
               </div>
@@ -243,7 +284,7 @@ const Dashboard = () => {
               <div className="flex items-center justify-center py-16">
                 <div className="text-center">
                   <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
-                  <p className="text-gray-400">Loading credentials...</p>
+                  <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>Loading credentials...</p>
                 </div>
               </div>
             ) : (
@@ -252,17 +293,18 @@ const Dashboard = () => {
                 onEdit={handleEdit}
                 onDelete={handleDelete}
                 isAdmin={user?.role === 'admin'}
+                isDark={isDark}
               />
             )}
           </>
         )}
 
         {activeTab === 'folders' && user?.role === 'admin' && (
-          <FolderManager folders={folders} onUpdate={fetchFolders} />
+          <FolderManager folders={folders} onUpdate={fetchFolders} isDark={isDark} />
         )}
 
         {activeTab === 'users' && user?.role === 'admin' && (
-          <UserManager />
+          <UserManager isDark={isDark} />
         )}
 
         {showForm && (
@@ -270,6 +312,7 @@ const Dashboard = () => {
             credential={editingCredential}
             folders={folders}
             onClose={handleFormClose}
+            isDark={isDark}
           />
         )}
 

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-const CredentialList = ({ credentials, onEdit, onDelete, isAdmin }) => {
+const CredentialList = ({ credentials, onEdit, onDelete, isAdmin, isDark }) => {
   const [showPassword, setShowPassword] = useState({})
 
   const togglePassword = (id) => {
@@ -9,12 +9,14 @@ const CredentialList = ({ credentials, onEdit, onDelete, isAdmin }) => {
 
   if (!credentials || credentials.length === 0) {
     return (
-      <div className="bg-gray-800 border border-gray-700 rounded-xl p-12 text-center">
-        <svg className="w-16 h-16 text-gray-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className={`rounded-xl p-12 text-center border ${
+        isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+      }`}>
+        <svg className={`w-16 h-16 mx-auto mb-4 ${isDark ? 'text-gray-600' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
         </svg>
-        <p className="text-gray-400 text-lg">No credentials found</p>
-        <p className="text-gray-500 text-sm mt-2">Create your first credential to get started</p>
+        <p className={`text-lg ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>No credentials found</p>
+        <p className={`text-sm mt-2 ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>Create your first credential to get started</p>
       </div>
     )
   }
@@ -22,7 +24,11 @@ const CredentialList = ({ credentials, onEdit, onDelete, isAdmin }) => {
   return (
     <div className="grid gap-4">
       {credentials.map((cred) => (
-        <div key={cred.id} className="bg-gray-800 border border-gray-700 rounded-xl hover:border-gray-600 transition-all duration-200 overflow-hidden">
+        <div key={cred.id} className={`rounded-xl transition-all duration-200 overflow-hidden border ${
+          isDark 
+            ? 'bg-gray-800 border-gray-700 hover:border-gray-600' 
+            : 'bg-white border-gray-200 hover:border-gray-300'
+        }`}>
           <div className="p-6">
             <div className="flex justify-between items-start mb-4">
               <div className="flex-1">
@@ -33,8 +39,8 @@ const CredentialList = ({ credentials, onEdit, onDelete, isAdmin }) => {
                     </svg>
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-white">{cred.service_name}</h3>
-                    <p className="text-sm text-gray-400">{cred.username}</p>
+                    <h3 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{cred.service_name}</h3>
+                    <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>{cred.username}</p>
                   </div>
                 </div>
               </div>
@@ -42,13 +48,21 @@ const CredentialList = ({ credentials, onEdit, onDelete, isAdmin }) => {
                 <div className="flex space-x-2">
                   <button
                     onClick={() => onEdit(cred)}
-                    className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors duration-200 text-sm font-medium border border-gray-600"
+                    className={`px-4 py-2 rounded-lg transition-colors duration-200 text-sm font-medium border ${
+                      isDark 
+                        ? 'bg-gray-700 hover:bg-gray-600 text-white border-gray-600' 
+                        : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border-gray-300'
+                    }`}
                   >
                     Edit
                   </button>
                   <button
                     onClick={() => onDelete(cred.id)}
-                    className="px-4 py-2 bg-red-900/50 hover:bg-red-900 text-red-200 rounded-lg transition-colors duration-200 text-sm font-medium border border-red-800"
+                    className={`px-4 py-2 rounded-lg transition-colors duration-200 text-sm font-medium border ${
+                      isDark 
+                        ? 'bg-red-900/50 hover:bg-red-900 text-red-200 border-red-800' 
+                        : 'bg-red-50 hover:bg-red-100 text-red-700 border-red-200'
+                    }`}
                   >
                     Delete
                   </button>
@@ -56,17 +70,23 @@ const CredentialList = ({ credentials, onEdit, onDelete, isAdmin }) => {
               )}
             </div>
 
-            <div className="bg-gray-900 border border-gray-700 rounded-lg p-4 mb-3">
+            <div className={`rounded-lg p-4 mb-3 border ${
+              isDark ? 'bg-gray-900 border-gray-700' : 'bg-gray-50 border-gray-200'
+            }`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3 flex-1">
-                  <span className="text-gray-400 text-sm font-medium">Password:</span>
-                  <code className="text-white font-mono text-sm">
+                  <span className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Password:</span>
+                  <code className={`font-mono text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>
                     {showPassword[cred.id] ? cred.password : '••••••••••••'}
                   </code>
                 </div>
                 <button
                   onClick={() => togglePassword(cred.id)}
-                  className="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition-colors duration-200 text-sm font-medium border border-gray-700"
+                  className={`px-3 py-1.5 rounded-lg transition-colors duration-200 text-sm font-medium border ${
+                    isDark 
+                      ? 'bg-gray-800 hover:bg-gray-700 text-gray-300 border-gray-700' 
+                      : 'bg-white hover:bg-gray-50 text-gray-700 border-gray-300'
+                  }`}
                 >
                   {showPassword[cred.id] ? 'Hide' : 'Show'}
                 </button>
@@ -74,15 +94,17 @@ const CredentialList = ({ credentials, onEdit, onDelete, isAdmin }) => {
             </div>
 
             {cred.notes && (
-              <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
-                <span className="text-gray-400 text-sm font-medium block mb-2">Notes:</span>
-                <p className="text-gray-300 text-sm leading-relaxed">{cred.notes}</p>
+              <div className={`rounded-lg p-4 border ${
+                isDark ? 'bg-gray-900 border-gray-700' : 'bg-gray-50 border-gray-200'
+              }`}>
+                <span className={`text-sm font-medium block mb-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Notes:</span>
+                <p className={`text-sm leading-relaxed ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{cred.notes}</p>
               </div>
             )}
 
             {isAdmin && (
-              <div className="mt-4 pt-4 border-t border-gray-700">
-                <span className="text-xs text-gray-500">User ID: {cred.user_id}</span>
+              <div className={`mt-4 pt-4 border-t ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
+                <span className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>User ID: {cred.user_id}</span>
               </div>
             )}
           </div>
