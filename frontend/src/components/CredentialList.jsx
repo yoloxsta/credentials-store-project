@@ -40,7 +40,6 @@ const CredentialList = ({ credentials, onEdit, onDelete, isAdmin, isDark }) => {
                   </div>
                   <div>
                     <h3 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{cred.service_name}</h3>
-                    <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>{cred.username}</p>
                   </div>
                 </div>
               </div>
@@ -68,6 +67,17 @@ const CredentialList = ({ credentials, onEdit, onDelete, isAdmin, isDark }) => {
                   </button>
                 </div>
               )}
+            </div>
+
+            <div className={`rounded-lg p-4 mb-3 border ${
+              isDark ? 'bg-gray-900 border-gray-700' : 'bg-gray-50 border-gray-200'
+            }`}>
+              <div className="mb-3">
+                <span className={`text-sm font-medium block mb-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Username:</span>
+                <code className={`font-mono text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  {cred.username}
+                </code>
+              </div>
             </div>
 
             <div className={`rounded-lg p-4 mb-3 border ${
