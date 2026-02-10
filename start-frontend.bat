@@ -1,0 +1,6 @@
+@echo off
+cd frontend
+echo Installing dependencies...
+call npm install
+echo Starting frontend development server...
+call npm run dev
