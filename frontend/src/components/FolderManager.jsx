@@ -2,209 +2,172 @@ import { useState } from 'react'
 import api from '../services/api'
 
 const FolderManager = ({ folders, onUpdate }) => {
-  const [showCreateForm, setShowCreateForm] = useState(false)
-  const [newFolder, setNewFolder] = useState({ name: '', description: '' })
-  const [editingPermissions, setEditingPermissions] = useState(null)
-  const [loading, setLoading] = useState(false)
+  const [editingFolder, setEditingFolder] = useState(null)
+  const [permissions, setPermissions] = useState({})
 
-  const handleCreateFolder = async (e) => {
-    e.preventDefault()
-    setLoading(true)
-    try {
-      await api.post('/folders', newFolder)
-      setNewFolder({ name: '', description: '' })
-      setShowCreateForm(false)
-      onUpdate()
-    } catch (error) {
-      alert('Failed to create folder')
-    } finally {
-      setLoading(false)
-    }
+  const handleEdit = (folder) => {
+    setEditingFolder(folder)
+    const perms = {}
+    folder.permissions?.forEach(p => {
+      perms[p.user_group] = {
+        can_read: p.can_read,
+        can_write: p.can_write,
+        can_delete: p.can_delete
+      }
+    })
+    setPermissions(perms)
   }
 
-  const handleUpdatePermission = async (folderId, userGroup, permission) => {
-    try {
-      await api.put(`/folders/${folderId}/permissions`, {
-        user_group: userGroup,
-        ...permission
-      })
-      onUpdate()
-    } catch (error) {
-      alert('Failed to update permission')
-    }
+  const handlePermissionChange = (group, permission, value) => {
+    setPermissions(prev => ({
+      ...prev,
+      [group]: {
+        ...prev[group],
+        [permission]: value
+      }
+    }))
   }
 
-  const userGroups = ['admin', 'senior', 'junior']
+  const handleSave = async () => {
+    try {
+      for (const [group, perms] of Object.entries(permissions)) {
+        await api.put(`/folders/${editingFolder.id}/permissions`, {
+          user_group: group,
+          ...perms
+        })
+      }
+      setEditingFolder(null)
+      setPermissions({})
+      onUpdate()
+    } catch (error) {
+      alert('Failed to update permissions')
+    }
+  }
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold">Folder Management</h2>
-        <button
-          onClick={() => setShowCreateForm(true)}
-          className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-        >
-          Create Folder
-        </button>
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold text-white">Folder Management</h2>
+        <p className="text-sm text-gray-400 mt-1">Configure folder permissions for user groups</p>
       </div>
 
-      {/* Create Folder Form */}
-      {showCreateForm && (
-        <div className="bg-white p-6 rounded-lg shadow mb-6">
-          <h3 className="text-lg font-semibold mb-4">Create New Folder</h3>
-          <form onSubmit={handleCreateFolder}>
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">Name</label>
-                <input
-                  type="text"
-                  value={newFolder.name}
-                  onChange={(e) => setNewFolder({ ...newFolder, name: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-md"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Description</label>
-                <input
-                  type="text"
-                  value={newFolder.description}
-                  onChange={(e) => setNewFolder({ ...newFolder, description: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-md"
-                />
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <button
-                type="submit"
-                disabled={loading}
-                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-              >
-                {loading ? 'Creating...' : 'Create'}
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowCreateForm(false)}
-                className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400"
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
+      {!folders || folders.length === 0 ? (
+        <div className="bg-gray-800 border border-gray-700 rounded-xl p-12 text-center">
+          <svg className="w-16 h-16 text-gray-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+          </svg>
+          <p className="text-gray-400 text-lg">No folders found</p>
         </div>
-      )}
-
-      {/* Folders List */}
-      <div className="space-y-6">
-        {folders.map(folder => (
-          <div key={folder.id} className="bg-white p-6 rounded-lg shadow">
+      ) : (
+        <div className="grid gap-4">
+          {folders.map((folder) => (
+          <div key={folder.id} className="bg-gray-800 border border-gray-700 rounded-xl p-6">
             <div className="flex justify-between items-start mb-4">
               <div>
-                <h3 className="text-lg font-semibold">{folder.name}</h3>
-                <p className="text-gray-600">{folder.description}</p>
+                <h3 className="text-xl font-bold text-white flex items-center space-x-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                  </svg>
+                  <span>{folder.name}</span>
+                </h3>
+                <p className="text-sm text-gray-400 mt-1">Environment folder</p>
               </div>
               <button
-                onClick={() => setEditingPermissions(
-                  editingPermissions === folder.id ? null : folder.id
-                )}
-                className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
+                onClick={() => handleEdit(folder)}
+                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors duration-200 text-sm font-medium border border-gray-600"
               >
-                {editingPermissions === folder.id ? 'Hide' : 'Manage Permissions'}
+                Edit Permissions
               </button>
             </div>
 
-            {/* Current Permissions Display */}
-            <div className="mb-4">
-              <h4 className="font-medium mb-2">Current Permissions:</h4>
-              <div className="grid grid-cols-3 gap-4 text-sm">
-                {userGroups.map(group => {
-                  const perm = folder.permissions?.[group]
-                  return (
-                    <div key={group} className="bg-gray-50 p-2 rounded">
-                      <div className="font-medium capitalize">{group}</div>
-                      <div className="text-xs text-gray-600">
-                        {perm ? (
-                          <>
-                            {perm.can_read && <span className="bg-green-200 px-1 rounded mr-1">R</span>}
-                            {perm.can_write && <span className="bg-blue-200 px-1 rounded mr-1">W</span>}
-                            {perm.can_delete && <span className="bg-red-200 px-1 rounded mr-1">D</span>}
-                            {!perm.can_read && !perm.can_write && !perm.can_delete && 'No Access'}
-                          </>
-                        ) : (
-                          'No Access'
+            {editingFolder?.id === folder.id ? (
+              <div className="mt-4 space-y-4">
+                {['admin', 'senior', 'junior'].map((group) => (
+                  <div key={group} className="bg-gray-900 border border-gray-700 rounded-lg p-4">
+                    <h4 className="font-semibold text-white mb-3 capitalize">{group} Group</h4>
+                    <div className="grid grid-cols-3 gap-4">
+                      <label className="flex items-center space-x-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={permissions[group]?.can_read || false}
+                          onChange={(e) => handlePermissionChange(group, 'can_read', e.target.checked)}
+                          className="w-4 h-4 text-blue-600 bg-gray-800 border-gray-600 rounded focus:ring-blue-500"
+                        />
+                        <span className="text-sm text-gray-300">Read</span>
+                      </label>
+                      <label className="flex items-center space-x-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={permissions[group]?.can_write || false}
+                          onChange={(e) => handlePermissionChange(group, 'can_write', e.target.checked)}
+                          className="w-4 h-4 text-blue-600 bg-gray-800 border-gray-600 rounded focus:ring-blue-500"
+                        />
+                        <span className="text-sm text-gray-300">Write</span>
+                      </label>
+                      <label className="flex items-center space-x-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={permissions[group]?.can_delete || false}
+                          onChange={(e) => handlePermissionChange(group, 'can_delete', e.target.checked)}
+                          className="w-4 h-4 text-blue-600 bg-gray-800 border-gray-600 rounded focus:ring-blue-500"
+                        />
+                        <span className="text-sm text-gray-300">Delete</span>
+                      </label>
+                    </div>
+                  </div>
+                ))}
+                <div className="flex gap-3 pt-2">
+                  <button
+                    onClick={handleSave}
+                    className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-lg hover:from-blue-500 hover:to-blue-400 transition-all duration-200 font-semibold shadow-lg shadow-blue-500/50"
+                  >
+                    Save Permissions
+                  </button>
+                  <button
+                    onClick={() => {
+                      setEditingFolder(null)
+                      setPermissions({})
+                    }}
+                    className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors duration-200 font-semibold border border-gray-600"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="mt-4 grid grid-cols-3 gap-4">
+                {Array.isArray(folder.permissions) && folder.permissions.length > 0 ? (
+                  folder.permissions.map((perm) => (
+                    <div key={perm.user_group} className="bg-gray-900 border border-gray-700 rounded-lg p-3">
+                      <p className="text-sm font-semibold text-white capitalize mb-2">{perm.user_group}</p>
+                      <div className="flex flex-wrap gap-1">
+                        {perm.can_read && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-900 text-green-200">
+                            Read
+                          </span>
+                        )}
+                        {perm.can_write && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-900 text-blue-200">
+                            Write
+                          </span>
+                        )}
+                        {perm.can_delete && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-900 text-red-200">
+                            Delete
+                          </span>
                         )}
                       </div>
                     </div>
-                  )
-                })}
-              </div>
-            </div>
-
-            {/* Permission Editor */}
-            {editingPermissions === folder.id && (
-              <div className="border-t pt-4">
-                <h4 className="font-medium mb-3">Edit Permissions:</h4>
-                <div className="space-y-3">
-                  {userGroups.map(group => {
-                    const currentPerm = folder.permissions?.[group] || {
-                      can_read: false,
-                      can_write: false,
-                      can_delete: false
-                    }
-                    
-                    return (
-                      <div key={group} className="flex items-center justify-between bg-gray-50 p-3 rounded">
-                        <span className="font-medium capitalize">{group}</span>
-                        <div className="flex gap-4">
-                          <label className="flex items-center">
-                            <input
-                              type="checkbox"
-                              checked={currentPerm.can_read}
-                              onChange={(e) => handleUpdatePermission(folder.id, group, {
-                                can_read: e.target.checked,
-                                can_write: currentPerm.can_write,
-                                can_delete: currentPerm.can_delete
-                              })}
-                              className="mr-1"
-                            />
-                            Read
-                          </label>
-                          <label className="flex items-center">
-                            <input
-                              type="checkbox"
-                              checked={currentPerm.can_write}
-                              onChange={(e) => handleUpdatePermission(folder.id, group, {
-                                can_read: currentPerm.can_read,
-                                can_write: e.target.checked,
-                                can_delete: currentPerm.can_delete
-                              })}
-                              className="mr-1"
-                            />
-                            Write
-                          </label>
-                          <label className="flex items-center">
-                            <input
-                              type="checkbox"
-                              checked={currentPerm.can_delete}
-                              onChange={(e) => handleUpdatePermission(folder.id, group, {
-                                can_read: currentPerm.can_read,
-                                can_write: currentPerm.can_write,
-                                can_delete: e.target.checked
-                              })}
-                              className="mr-1"
-                            />
-                            Delete
-                          </label>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
+                  ))
+                ) : (
+                  <p className="text-gray-400 text-sm col-span-3">No permissions configured</p>
+                )}
               </div>
             )}
           </div>
         ))}
       </div>
+      )}
     </div>
   )
 }
