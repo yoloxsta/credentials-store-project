@@ -20,8 +20,8 @@ type FolderPermission struct {
 
 type FolderWithPermissions struct {
 	Folder
-	Permissions map[string]FolderPermission `json:"permissions"`
-	UserAccess  *FolderPermission           `json:"user_access,omitempty"`
+	Permissions []FolderPermission  `json:"permissions"`
+	UserAccess  *FolderPermission   `json:"user_access,omitempty"`
 }
 
 type CreateFolderRequest struct {

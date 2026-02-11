@@ -36,15 +36,13 @@ func (s *FolderService) GetAllWithPermissions(userGroup, role string) ([]models.
 	for _, folder := range folders {
 		folderWithPerms := models.FolderWithPermissions{
 			Folder:      folder,
-			Permissions: make(map[string]models.FolderPermission),
+			Permissions: []models.FolderPermission{},
 		}
 
 		// Get all permissions for this folder
 		perms, err := s.folderRepo.GetAllPermissions(folder.ID)
 		if err == nil {
-			for _, perm := range perms {
-				folderWithPerms.Permissions[perm.UserGroup] = perm
-			}
+			folderWithPerms.Permissions = perms
 		}
 
 		// Get user's specific access
