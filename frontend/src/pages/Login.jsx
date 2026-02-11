@@ -39,7 +39,6 @@ const Login = () => {
           <h1 className={`text-3xl font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
             Credential Vault
           </h1>
-          <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>Enterprise Security Platform</p>
           <button
             onClick={toggleTheme}
             className={`mt-4 p-2 rounded-lg transition-colors duration-200 ${

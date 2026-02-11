@@ -107,10 +107,7 @@ const Dashboard = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
               </div>
-              <div>
-                <h1 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Credential Vault</h1>
-                <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Enterprise Security Platform</p>
-              </div>
+              <h1 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Credential Vault</h1>
             </div>
             <div className="flex items-center space-x-4">
               <button
