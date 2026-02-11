@@ -11,21 +11,35 @@ import (
 
 	"credential-store/internal/models"
 	"credential-store/internal/repository"
+	"credential-store/internal/services"
 
 	"github.com/gin-gonic/gin"
 )
 
 type DocumentHandler struct {
-	repo       *repository.DocumentRepository
-	uploadPath string
+	repo      *repository.DocumentRepository
+	s3Service *services.S3Service
+	useS3     bool
 }
 
 func NewDocumentHandler(repo *repository.DocumentRepository) *DocumentHandler {
-	uploadPath := "./uploads"
-	os.MkdirAll(uploadPath, 0755)
+	// Try to initialize S3 service
+	s3Service, err := services.NewS3Service()
+	useS3 := err == nil && s3Service != nil
+
+	if !useS3 {
+		// Fallback to local storage
+		uploadPath := "./uploads"
+		os.MkdirAll(uploadPath, 0755)
+		fmt.Println("Using local file storage (S3 not configured)")
+	} else {
+		fmt.Println("Using AWS S3 for file storage")
+	}
+
 	return &DocumentHandler{
-		repo:       repo,
-		uploadPath: uploadPath,
+		repo:      repo,
+		s3Service: s3Service,
+		useS3:     useS3,
 	}
 }
 
@@ -49,22 +63,41 @@ func (h *DocumentHandler) Upload(c *gin.Context) {
 	// Generate unique filename
 	ext := filepath.Ext(header.Filename)
 	filename := fmt.Sprintf("%d_%s%s", time.Now().Unix(), strconv.Itoa(int(time.Now().UnixNano())), ext)
-	filePath := filepath.Join(h.uploadPath, filename)
 
-	// Create file
-	dst, err := os.Create(filePath)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save file"})
-		return
-	}
-	defer dst.Close()
+	var fileSize int64
 
-	// Copy file content
-	fileSize, err := io.Copy(dst, file)
-	if err != nil {
-		os.Remove(filePath)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save file"})
-		return
+	if h.useS3 {
+		// Upload to S3
+		fileBytes, err := io.ReadAll(file)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read file"})
+			return
+		}
+		fileSize = int64(len(fileBytes))
+
+		err = h.s3Service.UploadFromBytes(filename, fileBytes, header.Header.Get("Content-Type"))
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload to S3"})
+			return
+		}
+	} else {
+		// Upload to local storage
+		uploadPath := "./uploads"
+		filePath := filepath.Join(uploadPath, filename)
+
+		dst, err := os.Create(filePath)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save file"})
+			return
+		}
+		defer dst.Close()
+
+		fileSize, err = io.Copy(dst, file)
+		if err != nil {
+			os.Remove(filePath)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save file"})
+			return
+		}
 	}
 
 	// Get user ID from context
@@ -82,7 +115,12 @@ func (h *DocumentHandler) Upload(c *gin.Context) {
 
 	err = h.repo.Create(doc)
 	if err != nil {
-		os.Remove(filePath)
+		// Cleanup on database error
+		if h.useS3 {
+			h.s3Service.Delete(filename)
+		} else {
+			os.Remove(filepath.Join("./uploads", filename))
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save document info"})
 		return
 	}
@@ -149,18 +187,25 @@ func (h *DocumentHandler) View(c *gin.Context) {
 		}
 	}
 
-	filePath := filepath.Join(h.uploadPath, doc.Filename)
-	
-	// Check if file exists
-	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		c.JSON(http.StatusNotFound, gin.H{"error": "File not found"})
-		return
+	if h.useS3 {
+		// Generate presigned URL for inline viewing
+		url, err := h.s3Service.GetPresignedURL(doc.Filename, fmt.Sprintf("inline; filename=%s", doc.OriginalFilename))
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate view URL"})
+			return
+		}
+		c.Redirect(http.StatusTemporaryRedirect, url)
+	} else {
+		// Serve from local storage
+		filePath := filepath.Join("./uploads", doc.Filename)
+		if _, err := os.Stat(filePath); os.IsNotExist(err) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "File not found"})
+			return
+		}
+		c.Header("Content-Type", doc.MimeType)
+		c.Header("Content-Disposition", fmt.Sprintf("inline; filename=%s", doc.OriginalFilename))
+		c.File(filePath)
 	}
-
-	// Set content type for inline viewing (not download)
-	c.Header("Content-Type", doc.MimeType)
-	c.Header("Content-Disposition", fmt.Sprintf("inline; filename=%s", doc.OriginalFilename))
-	c.File(filePath)
 }
 
 func (h *DocumentHandler) Download(c *gin.Context) {
@@ -189,17 +234,25 @@ func (h *DocumentHandler) Download(c *gin.Context) {
 		}
 	}
 
-	filePath := filepath.Join(h.uploadPath, doc.Filename)
-	
-	// Check if file exists
-	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		c.JSON(http.StatusNotFound, gin.H{"error": "File not found"})
-		return
+	if h.useS3 {
+		// Generate presigned URL for download
+		url, err := h.s3Service.GetPresignedURL(doc.Filename, fmt.Sprintf("attachment; filename=%s", doc.OriginalFilename))
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate download URL"})
+			return
+		}
+		c.Redirect(http.StatusTemporaryRedirect, url)
+	} else {
+		// Serve from local storage
+		filePath := filepath.Join("./uploads", doc.Filename)
+		if _, err := os.Stat(filePath); os.IsNotExist(err) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "File not found"})
+			return
+		}
+		c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%s", doc.OriginalFilename))
+		c.Header("Content-Type", doc.MimeType)
+		c.File(filePath)
 	}
-
-	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%s", doc.OriginalFilename))
-	c.Header("Content-Type", doc.MimeType)
-	c.File(filePath)
 }
 
 func (h *DocumentHandler) UpdatePermission(c *gin.Context) {
@@ -237,9 +290,13 @@ func (h *DocumentHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	// Delete file from disk
-	filePath := filepath.Join(h.uploadPath, doc.Filename)
-	os.Remove(filePath)
+	// Delete file from storage
+	if h.useS3 {
+		h.s3Service.Delete(doc.Filename)
+	} else {
+		filePath := filepath.Join("./uploads", doc.Filename)
+		os.Remove(filePath)
+	}
 
 	// Delete from database
 	err = h.repo.Delete(id)

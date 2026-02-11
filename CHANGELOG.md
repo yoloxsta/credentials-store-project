@@ -5,6 +5,49 @@ All notable changes to the Credential Store project will be documented in this f
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-02-11
+
+### Added
+
+#### AWS S3 Integration
+- **S3 Service** (`backend/internal/services/s3_service.go`)
+  - Upload files to AWS S3
+  - Download files from S3
+  - Delete files from S3
+  - Generate presigned URLs for secure temporary access (15-minute expiry)
+- **Automatic Storage Detection**
+  - Application automatically detects if S3 is configured
+  - Falls back to local filesystem if S3 credentials not provided
+  - No code changes needed to switch between storage modes
+- **Environment Configuration**
+  - Added AWS_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_S3_BUCKET
+  - Optional configuration - works without S3
+- **Documentation**
+  - Comprehensive AWS_S3_SETUP.md guide
+  - S3 bucket creation instructions
+  - IAM user setup
+  - Security best practices
+  - Cost estimation
+  - Troubleshooting guide
+
+### Changed
+- **Document Handler** updated to support both S3 and local storage
+- **Docker Compose** now uses `env_file` directive for cleaner configuration
+- **Frontend Download** simplified to work with S3 presigned URLs
+- Removed obsolete `version` attribute from docker-compose.yml
+
+### Fixed
+- Presigned URL expiration issue (was expiring immediately)
+- Document download with S3 storage
+- Document view with S3 storage
+
+### Technical Details
+- Added `github.com/aws/aws-sdk-go` dependency
+- Presigned URLs valid for 15 minutes
+- Supports unlimited file storage with S3
+- 99.999999999% durability with S3
+- Cost-effective storage (~$0.50/month for 1000 documents)
+
 ## [1.0.0] - 2026-02-11
 
 ### Added

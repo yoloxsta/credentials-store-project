@@ -61,17 +61,13 @@ const DocumentManager = ({ isDark, isAdmin }) => {
 
   const handleDownload = async (id, filename) => {
     try {
-      const response = await api.get(`/documents/${id}/download`, {
-        responseType: 'blob'
-      })
-      const url = window.URL.createObjectURL(new Blob([response.data]))
-      const link = document.createElement('a')
-      link.href = url
-      link.setAttribute('download', filename)
-      document.body.appendChild(link)
-      link.click()
-      link.remove()
+      const token = localStorage.getItem('token')
+      const url = `http://localhost:8080/api/documents/${id}/download?token=${token}`
+      
+      // Simply open the URL - backend will redirect to S3 presigned URL
+      window.open(url, '_blank')
     } catch (error) {
+      console.error('Download error:', error)
       alert('Failed to download document')
     }
   }

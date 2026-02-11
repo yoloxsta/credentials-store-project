@@ -33,11 +33,13 @@ A full-stack enterprise credential management application with advanced folder-b
 
 ### Document Management System
 - 📄 File upload and storage (admin-only upload)
+- ☁️ AWS S3 integration with automatic fallback to local storage
 - 👁️ View documents directly in browser (PDF, images, text files)
 - ⬇️ Download with permission control
 - 🔐 Granular permissions per user group (view/download)
 - 📊 File metadata tracking (size, uploader, date)
-- 💾 Persistent storage with Docker volumes
+- 💾 Persistent storage with Docker volumes or S3
+- 🔗 Presigned URLs for secure temporary access (S3)
 
 ### User Interface
 - 🎨 Professional dark mode (default)
@@ -265,6 +267,12 @@ DB_NAME=credstore
 JWT_SECRET=your-super-secret-jwt-key-change-in-production
 ENCRYPTION_KEY=12345678901234567890123456789012
 PORT=8080
+
+# AWS S3 Configuration (Optional - if not set, uses local storage)
+AWS_REGION=us-east-1
+AWS_ACCESS_KEY_ID=your_aws_access_key_id
+AWS_SECRET_ACCESS_KEY=your_aws_secret_access_key
+AWS_S3_BUCKET=your-bucket-name
 ```
 
 ### Frontend (`frontend/.env`)
