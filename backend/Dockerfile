@@ -16,6 +16,9 @@ RUN apk --no-cache add ca-certificates
 WORKDIR /root/
 
 COPY --from=builder /app/main .
+COPY --from=builder /app/migrations ./migrations
+
+RUN mkdir -p /root/uploads
 
 EXPOSE 8080
 
