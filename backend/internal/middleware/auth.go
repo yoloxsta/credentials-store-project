@@ -11,14 +11,22 @@ import (
 
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		var tokenString string
+		
+		// Try to get token from Authorization header first
 		authHeader := c.GetHeader("Authorization")
-		if authHeader == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "authorization header required"})
+		if authHeader != "" {
+			tokenString = strings.Replace(authHeader, "Bearer ", "", 1)
+		} else {
+			// If no header, try query parameter (for viewing documents in new tab)
+			tokenString = c.Query("token")
+		}
+		
+		if tokenString == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "authorization required"})
 			c.Abort()
 			return
 		}
-
-		tokenString := strings.Replace(authHeader, "Bearer ", "", 1)
 
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 			return []byte(os.Getenv("JWT_SECRET")), nil

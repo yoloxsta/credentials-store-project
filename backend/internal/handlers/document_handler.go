@@ -123,6 +123,46 @@ func (h *DocumentHandler) GetAll(c *gin.Context) {
 	c.JSON(http.StatusOK, documents)
 }
 
+func (h *DocumentHandler) View(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid document ID"})
+		return
+	}
+
+	doc, err := h.repo.GetByID(id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Document not found"})
+		return
+	}
+
+	// Check view permission
+	role, _ := c.Get("role")
+	if role != "admin" {
+		userGroup, exists := c.Get("user_group")
+		if exists {
+			canView, _ := h.repo.CheckPermission(doc.ID, userGroup.(string), "view")
+			if !canView {
+				c.JSON(http.StatusForbidden, gin.H{"error": "You don't have permission to view this document"})
+				return
+			}
+		}
+	}
+
+	filePath := filepath.Join(h.uploadPath, doc.Filename)
+	
+	// Check if file exists
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		c.JSON(http.StatusNotFound, gin.H{"error": "File not found"})
+		return
+	}
+
+	// Set content type for inline viewing (not download)
+	c.Header("Content-Type", doc.MimeType)
+	c.Header("Content-Disposition", fmt.Sprintf("inline; filename=%s", doc.OriginalFilename))
+	c.File(filePath)
+}
+
 func (h *DocumentHandler) Download(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {

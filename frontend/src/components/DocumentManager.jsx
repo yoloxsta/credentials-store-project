@@ -143,6 +143,13 @@ const DocumentManager = ({ isDark, isAdmin }) => {
     return userPermission?.can_download || false
   }
 
+  const handleView = (id) => {
+    // Open document in new tab for viewing
+    const token = localStorage.getItem('token')
+    const url = `http://localhost:8080/api/documents/${id}/view`
+    window.open(url + `?token=${token}`, '_blank')
+  }
+
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
@@ -346,6 +353,16 @@ const DocumentManager = ({ isDark, isAdmin }) => {
                     )}
                   </div>
                   <div className="flex space-x-2">
+                    <button
+                      onClick={() => handleView(doc.id)}
+                      className={`px-4 py-2 rounded-lg transition-colors duration-200 text-sm font-medium border ${
+                        isDark 
+                          ? 'bg-green-900/50 hover:bg-green-900 text-green-200 border-green-800' 
+                          : 'bg-green-50 hover:bg-green-100 text-green-700 border-green-200'
+                      }`}
+                    >
+                      View
+                    </button>
                     {canDownload(doc) && (
                       <button
                         onClick={() => handleDownload(doc.id, doc.original_filename)}
