@@ -1,42 +1,82 @@
 # Credential Store
 
-A full-stack credential management application with folder-based permissions and user group access control.
+A full-stack enterprise credential management application with advanced folder-based permissions, user group access control, and document management system.
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Go](https://img.shields.io/badge/Go-1.21-00ADD8?logo=go)
 ![React](https://img.shields.io/badge/React-18-61DAFB?logo=react)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-336791?logo=postgresql)
 
-## Features
+## ✨ Features
 
-- 🔐 User authentication with JWT
+### Security & Authentication
+- 🔐 JWT-based authentication with secure token management
+- 🔒 AES-256 encryption for credential storage
+- 🔑 bcrypt password hashing (cost 10)
 - 👥 Role-based access control (Admin/User)
-- 📁 User group management (Admin, Senior, Junior)
-- 🗂️ Folder-based permissions system
-- 🔒 Secure credential storage with AES-256 encryption
-- 👨‍💼 Admin-only user management
-- ✨ CRUD operations for credentials and folders
-- 🎨 Modern React frontend with Tailwind CSS
-- 🚀 RESTful API backend in Go
+- 🛡️ Folder-based permission system with granular access control
 
-## Tech Stack
+### User Management
+- 👨‍💼 Admin-only user creation and management
+- 📊 Three user groups: Admin, Senior, Junior
+- 🚫 Public signup disabled for security
+- ✏️ Full CRUD operations for user accounts
+- 🎯 Group-based folder access permissions
+
+### Credential Management
+- 📝 Secure credential storage with encryption
+- 📁 Folder organization (UAT, Production, Development, QA)
+- 👁️ View-only access for non-admin users
+- ✍️ Admin-only create/edit/delete operations
+- 🔍 Folder-based filtering and organization
+- 📋 Username and password display with show/hide toggle
+
+### Document Management System
+- 📄 File upload and storage (admin-only upload)
+- 👁️ View documents directly in browser (PDF, images, text files)
+- ⬇️ Download with permission control
+- 🔐 Granular permissions per user group (view/download)
+- 📊 File metadata tracking (size, uploader, date)
+- 💾 Persistent storage with Docker volumes
+
+### User Interface
+- 🎨 Professional dark mode (default)
+- ☀️ Light mode toggle
+- 🌓 Theme preference persistence
+- 💫 Modern gradient design with smooth animations
+- 📱 Responsive layout
+- 🎯 Intuitive navigation with tab-based interface
+- ✅ Toast notifications for user actions
+- 🎭 Enterprise-grade professional design
+
+### Technical Features
+- 🚀 RESTful API backend in Go
+- ⚡ Fast React frontend with Vite
+- 🐳 Docker Compose for easy deployment
+- 🗄️ PostgreSQL database with migrations
+- 🔄 Automatic database initialization
+- 📦 Persistent data volumes
+
+## 🎯 Tech Stack
 
 ### Backend
-- Go 1.21
-- Gin Web Framework
-- PostgreSQL 15
-- JWT Authentication
-- bcrypt for password hashing
-- AES-256 for credential encryption
+- **Language**: Go 1.21
+- **Framework**: Gin Web Framework
+- **Database**: PostgreSQL 15
+- **Authentication**: JWT (golang-jwt/jwt)
+- **Password Hashing**: bcrypt
+- **Encryption**: AES-256-GCM
+- **File Storage**: Local filesystem with Docker volumes
 
 ### Frontend
-- React 18
-- React Router
-- Axios
-- Tailwind CSS
-- Vite
+- **Framework**: React 18
+- **Routing**: React Router v6
+- **HTTP Client**: Axios
+- **Styling**: Tailwind CSS
+- **Build Tool**: Vite
+- **State Management**: React Context API
 
-## Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
 - Docker and Docker Compose
@@ -44,13 +84,13 @@ A full-stack credential management application with folder-based permissions and
 
 ### Quick Start (Local Development)
 
-1. Clone the repository:
+1. **Clone the repository**:
 ```bash
 git clone https://github.com/yourusername/credential-store.git
 cd credential-store
 ```
 
-2. Create environment files:
+2. **Create environment files**:
 ```bash
 # Backend
 cp backend/.env.example backend/.env
@@ -59,17 +99,17 @@ cp backend/.env.example backend/.env
 cp frontend/.env.example frontend/.env
 ```
 
-3. (Optional) Update environment variables in `backend/.env`:
+3. **(Optional) Update environment variables** in `backend/.env`:
    - Change `JWT_SECRET` to a secure random string
    - Change `ENCRYPTION_KEY` to a secure 32-character string
 
-4. Build and start all services:
+4. **Build and start all services**:
 ```bash
 docker-compose build
 docker-compose up -d
 ```
 
-5. Access the application:
+5. **Access the application**:
    - Frontend: http://localhost:5173
    - Backend API: http://localhost:8080
 
@@ -102,42 +142,68 @@ chmod +x deploy.sh
 
 📖 For detailed deployment guide including Nginx, SSL, and security hardening, see [DEPLOYMENT.md](DEPLOYMENT.md)
 
-### Default User Accounts
+## 👤 Default User Accounts
 
 All default passwords are: **admin123**
 
-- **Admin**: admin@credstore.com (admin role, admin group)
-- **Senior**: senior@credstore.com (user role, senior group)
-- **Junior**: junior@credstore.com (user role, junior group)
+| Email | Role | Group | Access Level |
+|-------|------|-------|--------------|
+| admin@credstore.com | admin | admin | Full access to everything |
+| senior@credstore.com | user | senior | UAT, Production folders |
+| junior@credstore.com | user | junior | UAT, Development folders |
 
 ⚠️ **Important**: Change these passwords immediately in production!
 
-## User Groups & Permissions
+## 🔐 User Groups & Permissions
 
-The system has three user groups with different folder access levels:
+### User Groups
 
-- **Admin Group**: Full access to all folders and credentials
-- **Senior Group**: Access to UAT and Production folders
-- **Junior Group**: Access to UAT and Development folders
+| Group | Credential Access | Document Access | User Management |
+|-------|------------------|-----------------|-----------------|
+| **Admin** | Full CRUD on all folders | Upload, view, download all | Create/edit/delete users |
+| **Senior** | View UAT, Production | Configurable per document | View only |
+| **Junior** | View UAT, Development | Configurable per document | View only |
 
-### Default Folders
+### Default Folder Permissions
 
-- **UAT**: All groups can read/write, only admin/senior can delete
-- **Production**: Only admin and senior groups can access
-- **Development**: All groups can read/write, only admin/senior can delete
+| Folder | Admin | Senior | Junior |
+|--------|-------|--------|--------|
+| **UAT** | Read/Write/Delete | Read/Write | Read/Write |
+| **Production** | Read/Write/Delete | Read/Write | No access |
+| **Development** | Read/Write/Delete | No access | Read/Write |
+| **QA** | Read/Write/Delete | Read | Read |
 
-## User Management
+### Document Permissions
 
-Only administrators can create and manage users:
+Admins can configure per-document permissions for each user group:
+- **Can View**: User can see and view the document in browser
+- **Can Download**: User can download the document to their device
 
-1. Login as admin (admin@credstore.com / admin123)
-2. Navigate to "Manage Users" tab
-3. Create new users with specific roles and groups
-4. Edit or delete existing users
+Default permissions when uploading:
+- Admin: View ✓, Download ✓
+- Senior: View ✓, Download ✓
+- Junior: View ✓, Download ✗
 
-**Note**: Public signup is disabled. All users must be created by administrators.
+## 📚 User Guide
 
-## API Endpoints
+### For Administrators
+
+1. **Login** with admin@credstore.com / admin123
+2. **Manage Users**: Create, edit, or delete user accounts
+3. **Manage Folders**: Create folders and set group permissions
+4. **Manage Credentials**: Add, edit, or delete credentials in any folder
+5. **Upload Documents**: Upload files and set view/download permissions
+6. **Configure Permissions**: Control who can access each document
+
+### For Regular Users (Senior/Junior)
+
+1. **Login** with your credentials
+2. **View Credentials**: Browse credentials in folders you have access to
+3. **View Documents**: Access documents based on your permissions
+4. **Download Documents**: Download files if you have download permission
+5. **Toggle Theme**: Switch between dark and light mode
+
+## 🔌 API Endpoints
 
 ### Authentication
 - `POST /api/auth/login` - Login (public)
@@ -154,14 +220,22 @@ Only administrators can create and manage users:
 - `POST /api/folders` - Create folder (admin only)
 - `PUT /api/folders/:id/permissions` - Update folder permissions (admin only)
 
-### Credentials (Admin Only for Create/Update/Delete)
+### Credentials
 - `POST /api/credentials` - Create credential (admin only)
 - `GET /api/credentials` - Get all accessible credentials
 - `GET /api/credentials/:id` - Get credential by ID
 - `PUT /api/credentials/:id` - Update credential (admin only)
 - `DELETE /api/credentials/:id` - Delete credential (admin only)
 
-## Development
+### Documents
+- `POST /api/documents` - Upload document (admin only)
+- `GET /api/documents` - Get all accessible documents
+- `GET /api/documents/:id/view` - View document in browser
+- `GET /api/documents/:id/download` - Download document
+- `PUT /api/documents/:id/permissions` - Update document permissions (admin only)
+- `DELETE /api/documents/:id` - Delete document (admin only)
+
+## 💻 Development
 
 ### Backend
 
@@ -179,9 +253,9 @@ npm install
 npm run dev
 ```
 
-## Environment Variables
+## 🔧 Environment Variables
 
-### Backend
+### Backend (`backend/.env`)
 ```env
 DB_HOST=postgres
 DB_PORT=5432
@@ -193,69 +267,92 @@ ENCRYPTION_KEY=12345678901234567890123456789012
 PORT=8080
 ```
 
-### Frontend
+### Frontend (`frontend/.env`)
 ```env
 VITE_API_URL=http://localhost:8080/api
 ```
 
-## Database Migrations
+## 🗄️ Database Migrations
 
 Migrations are automatically applied on container startup from the `backend/migrations` folder:
-- `001_init.sql` - Initial schema
-- `002_add_folders_and_groups.sql` - Folder permissions system
-- `003_default_users.sql` - Default user accounts
 
-## Project Structure
+| Migration | Description |
+|-----------|-------------|
+| `001_init.sql` | Initial schema (users, credentials) |
+| `002_add_folders_and_groups.sql` | Folder permissions system |
+| `003_default_users.sql` | Default user accounts |
+| `004_add_documents.sql` | Document management tables |
+| `005_add_document_permissions.sql` | Document permission system |
+
+## 📁 Project Structure
 
 ```
 credential-store/
 ├── backend/
-│   ├── cmd/server/          # Application entry point
+│   ├── cmd/server/              # Application entry point
 │   ├── internal/
-│   │   ├── handlers/        # HTTP request handlers
-│   │   ├── middleware/      # Authentication & authorization
-│   │   ├── models/          # Data models
-│   │   ├── repository/      # Database operations
-│   │   └── services/        # Business logic
-│   ├── migrations/          # SQL migration files
+│   │   ├── handlers/            # HTTP request handlers
+│   │   │   ├── auth_handler.go
+│   │   │   ├── credential_handler.go
+│   │   │   ├── folder_handler.go
+│   │   │   └── document_handler.go
+│   │   ├── middleware/          # Auth & authorization
+│   │   ├── models/              # Data models
+│   │   ├── repository/          # Database operations
+│   │   └── services/            # Business logic
+│   ├── migrations/              # SQL migration files
 │   ├── Dockerfile
 │   ├── go.mod
 │   └── go.sum
 ├── frontend/
 │   ├── src/
-│   │   ├── components/      # React components
-│   │   ├── pages/           # Page components
-│   │   ├── services/        # API services
-│   │   ├── context/         # React context
+│   │   ├── components/          # React components
+│   │   │   ├── CredentialList.jsx
+│   │   │   ├── CredentialForm.jsx
+│   │   │   ├── FolderManager.jsx
+│   │   │   ├── UserManager.jsx
+│   │   │   ├── DocumentManager.jsx
+│   │   │   └── Toast.jsx
+│   │   ├── pages/               # Page components
+│   │   │   ├── Login.jsx
+│   │   │   └── Dashboard.jsx
+│   │   ├── services/            # API services
+│   │   ├── context/             # React context
+│   │   │   ├── AuthContext.jsx
+│   │   │   └── ThemeContext.jsx
 │   │   └── App.jsx
 │   ├── Dockerfile
 │   ├── package.json
 │   └── vite.config.js
 ├── docker-compose.yml
-└── README.md
+├── deploy.sh
+├── README.md
+└── DEPLOYMENT.md
 ```
 
-## Stopping the Application
+## 🛑 Stopping the Application
 
 ```bash
+# Stop containers
 docker-compose down
-```
 
-To remove all data including the database:
-```bash
+# Stop and remove all data including database
 docker-compose down -v
 ```
 
-## Security Considerations
+## 🔒 Security Considerations
 
-- All passwords are hashed with bcrypt (cost 10)
-- Credentials are encrypted with AES-256
-- JWT tokens expire after 24 hours
-- CORS is configured for specific origins
-- SQL injection protection via parameterized queries
-- Admin-only endpoints are protected with middleware
+- ✅ All passwords hashed with bcrypt (cost 10)
+- ✅ Credentials encrypted with AES-256-GCM
+- ✅ JWT tokens expire after 24 hours
+- ✅ CORS configured for specific origins
+- ✅ SQL injection protection via parameterized queries
+- ✅ Admin-only endpoints protected with middleware
+- ✅ File upload size limits (50MB)
+- ✅ Permission checks on all document operations
+- ✅ Secure file storage with access control
 
-## Contributing
+## 🤝 Contributing
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
@@ -263,17 +360,18 @@ docker-compose down -v
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## License
+## 📄 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## Support
+## 💬 Support
 
 For issues and questions, please open an issue on GitHub.
 
-## Acknowledgments
+## 🙏 Acknowledgments
 
 - Built with Go and React
 - Uses Gin web framework
 - Styled with Tailwind CSS
 - Containerized with Docker
+- Inspired by enterprise security requirements
