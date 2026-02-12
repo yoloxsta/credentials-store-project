@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import api from '../services/api'
 
 const FolderManager = ({ folders, onUpdate, isDark }) => {
@@ -8,6 +8,21 @@ const FolderManager = ({ folders, onUpdate, isDark }) => {
   const [newFolderName, setNewFolderName] = useState('')
   const [newFolderDescription, setNewFolderDescription] = useState('')
   const [creating, setCreating] = useState(false)
+  const [groups, setGroups] = useState([])
+
+  // Fetch groups on component mount
+  useEffect(() => {
+    fetchGroups()
+  }, [])
+
+  const fetchGroups = async () => {
+    try {
+      const response = await api.get('/groups')
+      setGroups(response.data || [])
+    } catch (error) {
+      console.error('Failed to fetch groups:', error)
+    }
+  }
 
   const handleEdit = (folder) => {
     setEditingFolder(folder)
@@ -213,15 +228,15 @@ const FolderManager = ({ folders, onUpdate, isDark }) => {
 
             {editingFolder?.id === folder.id ? (
               <div className="mt-4 space-y-4">
-                {['admin', 'senior', 'junior'].map((group) => (
-                  <div key={group} className="bg-gray-900 border border-gray-700 rounded-lg p-4">
-                    <h4 className="font-semibold text-white mb-3 capitalize">{group} Group</h4>
+                {groups.map((group) => (
+                  <div key={group.name} className="bg-gray-900 border border-gray-700 rounded-lg p-4">
+                    <h4 className="font-semibold text-white mb-3 capitalize">{group.name} Group</h4>
                     <div className="grid grid-cols-3 gap-4">
                       <label className="flex items-center space-x-2 cursor-pointer">
                         <input
                           type="checkbox"
-                          checked={permissions[group]?.can_read || false}
-                          onChange={(e) => handlePermissionChange(group, 'can_read', e.target.checked)}
+                          checked={permissions[group.name]?.can_read || false}
+                          onChange={(e) => handlePermissionChange(group.name, 'can_read', e.target.checked)}
                           className="w-4 h-4 text-blue-600 bg-gray-800 border-gray-600 rounded focus:ring-blue-500"
                         />
                         <span className="text-sm text-gray-300">Read</span>
@@ -229,8 +244,8 @@ const FolderManager = ({ folders, onUpdate, isDark }) => {
                       <label className="flex items-center space-x-2 cursor-pointer">
                         <input
                           type="checkbox"
-                          checked={permissions[group]?.can_write || false}
-                          onChange={(e) => handlePermissionChange(group, 'can_write', e.target.checked)}
+                          checked={permissions[group.name]?.can_write || false}
+                          onChange={(e) => handlePermissionChange(group.name, 'can_write', e.target.checked)}
                           className="w-4 h-4 text-blue-600 bg-gray-800 border-gray-600 rounded focus:ring-blue-500"
                         />
                         <span className="text-sm text-gray-300">Write</span>
@@ -238,8 +253,8 @@ const FolderManager = ({ folders, onUpdate, isDark }) => {
                       <label className="flex items-center space-x-2 cursor-pointer">
                         <input
                           type="checkbox"
-                          checked={permissions[group]?.can_delete || false}
-                          onChange={(e) => handlePermissionChange(group, 'can_delete', e.target.checked)}
+                          checked={permissions[group.name]?.can_delete || false}
+                          onChange={(e) => handlePermissionChange(group.name, 'can_delete', e.target.checked)}
                           className="w-4 h-4 text-blue-600 bg-gray-800 border-gray-600 rounded focus:ring-blue-500"
                         />
                         <span className="text-sm text-gray-300">Delete</span>

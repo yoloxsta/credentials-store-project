@@ -38,16 +38,19 @@ func main() {
 	credRepo := repository.NewCredentialRepository(db)
 	folderRepo := repository.NewFolderRepository(db)
 	documentRepo := repository.NewDocumentRepository(db)
+	groupRepo := repository.NewGroupRepository(db)
 
 	authService := services.NewAuthService(userRepo)
 	encryptionService := services.NewEncryptionService()
 	credService := services.NewCredentialService(credRepo, encryptionService)
 	folderService := services.NewFolderService(folderRepo)
+	groupService := services.NewGroupService(groupRepo)
 
 	authHandler := handlers.NewAuthHandler(authService)
 	credHandler := handlers.NewCredentialHandler(credService)
 	folderHandler := handlers.NewFolderHandler(folderService)
 	documentHandler := handlers.NewDocumentHandler(documentRepo)
+	groupHandler := handlers.NewGroupHandler(groupService)
 
 	api := r.Group("/api")
 	{
@@ -67,6 +70,17 @@ func main() {
 			users.GET("", authHandler.GetAllUsers)
 			users.PUT("/:id", authHandler.UpdateUser)
 			users.DELETE("/:id", authHandler.DeleteUser)
+		}
+
+		// Group management (admin only)
+		groups := api.Group("/groups")
+		groups.Use(middleware.AuthMiddleware(), middleware.AdminMiddleware())
+		{
+			groups.POST("", groupHandler.Create)
+			groups.GET("", groupHandler.GetAll)
+			groups.GET("/:id", groupHandler.GetByID)
+			groups.PUT("/:id", groupHandler.Update)
+			groups.DELETE("/:id", groupHandler.Delete)
 		}
 
 		folders := api.Group("/folders")
