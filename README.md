@@ -85,6 +85,32 @@ A full-stack enterprise credential management application with advanced folder-b
 - Docker and Docker Compose
 - Git
 
+### Quick Start (5 minutes)
+
+1. **Clone the repository**:
+```bash
+git clone https://github.com/yourusername/credential-store.git
+cd credential-store
+```
+
+2. **Setup environment**:
+```bash
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
+# Edit backend/.env and change JWT_SECRET and ENCRYPTION_KEY
+```
+
+3. **Start the application**:
+```bash
+docker-compose up --build -d
+```
+
+4. **Access the app**:
+- Frontend: http://localhost:5173
+- Login: admin@credstore.com / admin123
+
+📖 **For detailed setup instructions, see [SETUP.md](SETUP.md)**
+
 ### Quick Start (Local Development)
 
 1. **Clone the repository**:
