@@ -188,13 +188,17 @@ func (h *DocumentHandler) View(c *gin.Context) {
 	}
 
 	if h.useS3 {
-		// Generate presigned URL for inline viewing
-		url, err := h.s3Service.GetPresignedURL(doc.Filename, fmt.Sprintf("inline; filename=%s", doc.OriginalFilename))
+		// Stream file from S3 through backend (hides AWS credentials)
+		fileBytes, err := h.s3Service.Download(doc.Filename)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate view URL"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve file"})
 			return
 		}
-		c.Redirect(http.StatusTemporaryRedirect, url)
+		
+		c.Header("Content-Type", doc.MimeType)
+		c.Header("Content-Disposition", fmt.Sprintf("inline; filename=%s", doc.OriginalFilename))
+		c.Header("Content-Length", strconv.FormatInt(int64(len(fileBytes)), 10))
+		c.Data(http.StatusOK, doc.MimeType, fileBytes)
 	} else {
 		// Serve from local storage
 		filePath := filepath.Join("./uploads", doc.Filename)
@@ -235,13 +239,17 @@ func (h *DocumentHandler) Download(c *gin.Context) {
 	}
 
 	if h.useS3 {
-		// Generate presigned URL for download
-		url, err := h.s3Service.GetPresignedURL(doc.Filename, fmt.Sprintf("attachment; filename=%s", doc.OriginalFilename))
+		// Stream file from S3 through backend (hides AWS credentials)
+		fileBytes, err := h.s3Service.Download(doc.Filename)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate download URL"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve file"})
 			return
 		}
-		c.Redirect(http.StatusTemporaryRedirect, url)
+		
+		c.Header("Content-Type", doc.MimeType)
+		c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%s", doc.OriginalFilename))
+		c.Header("Content-Length", strconv.FormatInt(int64(len(fileBytes)), 10))
+		c.Data(http.StatusOK, doc.MimeType, fileBytes)
 	} else {
 		// Serve from local storage
 		filePath := filepath.Join("./uploads", doc.Filename)

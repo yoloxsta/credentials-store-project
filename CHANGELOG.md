@@ -5,6 +5,109 @@ All notable changes to the Credential Store project will be documented in this f
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-02-12
+
+### Added
+
+#### Dynamic Groups System
+- **Groups Management Tab** (Admin only)
+  - Create, edit, and delete user groups dynamically
+  - No more hardcoded groups - fully database-driven
+  - Add custom groups like DevOps, QA, Intern, etc.
+  - Real-time group management without code changes
+- **Backend Implementation**
+  - New `groups` table with migration `006_create_groups_table.sql`
+  - Full CRUD API for groups: POST/GET/PUT/DELETE `/api/groups`
+  - `GroupRepository` for database operations
+  - `GroupService` for business logic
+  - `GroupHandler` for HTTP endpoints
+  - Default groups seeded: admin, senior, junior
+- **Frontend Implementation**
+  - New `GroupManager.jsx` component with full CRUD UI
+  - Groups tab in Dashboard (admin only)
+  - Create/Edit/Delete group operations
+  - Dark mode support
+  - Toast notifications for operations
+- **Integration**
+  - FolderManager now fetches groups dynamically from API
+  - UserManager includes hardcoded groups (admin, senior, junior, DevOps)
+  - Groups API requires admin authentication
+
+#### Folder Delete Functionality
+- **Delete Folders**
+  - Red trash icon button on each folder
+  - Confirmation dialog before deletion
+  - Safety check: prevents deletion if folder contains credentials
+  - Admin-only operation
+- **Backend Implementation**
+  - `Delete` method in FolderRepository
+  - `DeleteFolder` method in FolderService with safety checks
+  - `DELETE /api/folders/:id` endpoint
+- **Frontend Implementation**
+  - Delete button with trash icon
+  - Confirmation dialog
+  - Error handling for folders with credentials
+  - Success/error toast notifications
+
+### Changed
+- **Document Security Enhancement**
+  - Changed from presigned S3 URLs to backend proxy streaming
+  - AWS credentials no longer exposed in URLs
+  - Documents now served through: `http://localhost:8080/api/documents/:id/view?token=JWT`
+  - Backend downloads from S3 and streams directly to user
+  - JWT tokens in URLs are temporary (24-hour expiry) and signed
+- **UserManager Simplified**
+  - Removed dynamic group fetching to fix initialization issues
+  - Hardcoded group options: admin, senior, junior, DevOps
+  - More reliable and faster user creation
+  - Note: New groups must be manually added to UserManager dropdown
+
+### Fixed
+- Fixed `.gitignore` to properly exclude compiled binaries while including source files
+- Removed AWS credentials from `.env` file in repository
+- Fixed file caching issues in Docker builds
+- Fixed UserManager white screen issue caused by undefined groups state
+
+### Security
+- **AWS Credentials Protection**
+  - AWS Access Key ID no longer exposed in document URLs
+  - All S3 operations now proxied through backend
+  - JWT tokens used for document access (temporary, signed, expire in 24 hours)
+  - Credentials stored only in backend `.env` file (not in repository)
+
+### Documentation
+- Updated SETUP.md with comprehensive setup instructions
+- Updated README.md with quick start guide
+- Created AWS_S3_SETUP.md for S3 configuration
+- Added PUSH_TO_GITHUB.md with GitHub push checklist
+- Added GITHUB_PUSH_CHECKLIST.md for pre-push verification
+
+### Technical Details
+- Groups table with id, name, created_at, updated_at columns
+- Migration 006 creates groups table and seeds default groups
+- Groups API endpoints require admin role
+- Document streaming uses `io.Copy` for efficient file transfer
+- JWT tokens in document URLs provide temporary access control
+
+### Migration Notes
+- **For Existing Databases**: Run migration 006 manually:
+  ```sql
+  CREATE TABLE IF NOT EXISTS groups (
+      id SERIAL PRIMARY KEY,
+      name VARCHAR(50) UNIQUE NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
+  INSERT INTO groups (name) VALUES ('admin'), ('senior'), ('junior')
+  ON CONFLICT (name) DO NOTHING;
+  ```
+- **For New Deployments**: Migration runs automatically on first startup
+
+### Known Limitations
+- UserManager groups are hardcoded (admin, senior, junior, DevOps)
+- New groups created in Groups tab must be manually added to UserManager code
+- Dynamic group loading in UserManager will be implemented in future version
+
 ## [1.2.0] - 2026-02-12
 
 ### Added
