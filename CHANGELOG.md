@@ -29,9 +29,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Dark mode support
   - Toast notifications for operations
 - **Integration**
-  - FolderManager now fetches groups dynamically from API
-  - UserManager includes hardcoded groups (admin, senior, junior, DevOps)
+  - FolderManager fetches groups dynamically from API
+  - DocumentManager fetches groups dynamically from API
+  - UserManager fetches groups dynamically from API
+  - All components now fully synchronized with Groups table
   - Groups API requires admin authentication
+
+#### Automatic Permission Cleanup
+- **Cascade Delete for Groups**
+  - When a group is deleted, all associated permissions are automatically removed
+  - Cleans up folder permissions for deleted groups
+  - Cleans up document permissions for deleted groups
+  - Prevents orphaned permissions in database
+  - No manual cleanup required
+- **Smart Permission Display**
+  - Document list only shows permissions with actual access granted
+  - Hides permissions where both can_view and can_download are false
+  - Keeps UI clean and focused on meaningful permissions
 
 #### Folder Delete Functionality
 - **Delete Folders**
@@ -56,17 +70,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Documents now served through: `http://localhost:8080/api/documents/:id/view?token=JWT`
   - Backend downloads from S3 and streams directly to user
   - JWT tokens in URLs are temporary (24-hour expiry) and signed
-- **UserManager Simplified**
-  - Removed dynamic group fetching to fix initialization issues
-  - Hardcoded group options: admin, senior, junior, DevOps
-  - More reliable and faster user creation
-  - Note: New groups must be manually added to UserManager dropdown
+- **UserManager Fully Dynamic**
+  - Now fetches groups from API instead of hardcoded list
+  - Automatically syncs with Groups table
+  - Shows only groups that exist in database
+  - When group is deleted, it disappears from user creation dropdown
+- **DocumentManager Fully Dynamic**
+  - Fetches groups from API for permission management
+  - Shows all existing groups in permission editor
+  - Filters out permissions with no access in display
+- **FolderManager Fully Dynamic**
+  - Fetches groups from API for permission management
+  - Shows all existing groups in permission editor
 
 ### Fixed
 - Fixed `.gitignore` to properly exclude compiled binaries while including source files
 - Removed AWS credentials from `.env` file in repository
 - Fixed file caching issues in Docker builds
-- Fixed UserManager white screen issue caused by undefined groups state
+- Fixed UserManager to properly handle dynamic groups without white screen
+- Fixed orphaned permissions showing in document list
+- Fixed permission display to hide groups with no access
 
 ### Security
 - **AWS Credentials Protection**
@@ -74,6 +97,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - All S3 operations now proxied through backend
   - JWT tokens used for document access (temporary, signed, expire in 24 hours)
   - Credentials stored only in backend `.env` file (not in repository)
+- **Permission Integrity**
+  - Automatic cleanup prevents orphaned permissions
+  - Groups cannot be deleted if users exist in that group
+  - Cascade delete ensures referential integrity
 
 ### Documentation
 - Updated SETUP.md with comprehensive setup instructions
@@ -83,11 +110,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added GITHUB_PUSH_CHECKLIST.md for pre-push verification
 
 ### Technical Details
-- Groups table with id, name, created_at, updated_at columns
+- Groups table with id, name, description, created_at columns
 - Migration 006 creates groups table and seeds default groups
 - Groups API endpoints require admin role
 - Document streaming uses `io.Copy` for efficient file transfer
 - JWT tokens in document URLs provide temporary access control
+- Cascade delete implemented in GroupService.Delete method
+- Permission cleanup methods: DeleteFolderPermissions, DeleteDocumentPermissions
+- Frontend filter: `.filter(perm => perm.can_view || perm.can_download)`
 
 ### Migration Notes
 - **For Existing Databases**: Run migration 006 manually:
@@ -95,18 +125,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   CREATE TABLE IF NOT EXISTS groups (
       id SERIAL PRIMARY KEY,
       name VARCHAR(50) UNIQUE NOT NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      description TEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   );
-  INSERT INTO groups (name) VALUES ('admin'), ('senior'), ('junior')
+  INSERT INTO groups (name, description) VALUES 
+    ('admin', 'Administrator group with full access'),
+    ('senior', 'Senior team members'),
+    ('junior', 'Junior team members')
   ON CONFLICT (name) DO NOTHING;
+  ```
+- **Clean up orphaned permissions** (one-time):
+  ```sql
+  DELETE FROM document_permissions WHERE user_group NOT IN (SELECT name FROM groups);
+  DELETE FROM folder_permissions WHERE user_group NOT IN (SELECT name FROM groups);
   ```
 - **For New Deployments**: Migration runs automatically on first startup
 
 ### Known Limitations
-- UserManager groups are hardcoded (admin, senior, junior, DevOps)
-- New groups created in Groups tab must be manually added to UserManager code
-- Dynamic group loading in UserManager will be implemented in future version
+- Groups cannot be deleted if users exist in that group (safety check)
+- Group names must be unique
+- No group rename functionality (would require updating all user records)
 
 ## [1.2.0] - 2026-02-12
 

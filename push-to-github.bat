@@ -13,7 +13,7 @@ git add -A
 echo.
 
 echo Step 3: Committing changes...
-git commit -m "v1.3.0: Add dynamic groups, folder delete, and security enhancements - Add dynamic groups management system (admin only) - Add folder delete functionality with safety checks - Enhance document security by proxying S3 through backend - Fix UserManager with hardcoded groups (admin, senior, junior, DevOps) - Remove AWS credentials from repository - Update documentation and changelog"
+git commit -m "v1.3.0: Complete dynamic groups system with automatic cleanup - Fully dynamic groups in UserManager, DocumentManager, FolderManager - Automatic permission cleanup when groups are deleted - Smart permission display (hide empty permissions) - Folder delete functionality - Document security enhancements - All components now synchronized with Groups table"
 echo.
 
 echo Step 4: Pushing to GitHub...

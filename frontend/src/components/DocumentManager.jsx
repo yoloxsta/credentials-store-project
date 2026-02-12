@@ -346,7 +346,7 @@ const DocumentManager = ({ isDark, isAdmin }) => {
                       </div>
                     ) : (
                       <div className="mt-3 flex flex-wrap gap-2">
-                        {doc.permissions?.map((perm) => (
+                        {doc.permissions?.filter(perm => perm.can_view || perm.can_download).map((perm) => (
                           <div key={perm.user_group} className={`inline-flex items-center px-3 py-1 rounded-lg text-xs font-medium ${
                             isDark ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-700'
                           }`}>

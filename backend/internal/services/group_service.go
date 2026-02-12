@@ -93,5 +93,16 @@ func (s *GroupService) Delete(id string) error {
 		return errors.New("cannot delete group with existing users")
 	}
 
+	// Clean up folder permissions for this group
+	if err := s.groupRepo.DeleteFolderPermissions(group.Name); err != nil {
+		return err
+	}
+
+	// Clean up document permissions for this group
+	if err := s.groupRepo.DeleteDocumentPermissions(group.Name); err != nil {
+		return err
+	}
+
+	// Delete the group
 	return s.groupRepo.Delete(groupID)
 }

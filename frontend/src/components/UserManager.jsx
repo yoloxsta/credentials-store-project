@@ -3,19 +3,35 @@ import api from '../services/api'
 
 const UserManager = ({ isDark }) => {
   const [users, setUsers] = useState([])
+  const [groups, setGroups] = useState([])
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [editingUser, setEditingUser] = useState(null)
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     role: 'user',
-    user_group: 'admin'
+    user_group: ''
   })
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     fetchUsers()
+    fetchGroups()
   }, [])
+
+  const fetchGroups = async () => {
+    try {
+      const response = await api.get('/groups')
+      const groupList = response.data || []
+      setGroups(groupList)
+      if (groupList.length > 0 && !formData.user_group) {
+        setFormData(prev => ({ ...prev, user_group: groupList[0].name }))
+      }
+    } catch (error) {
+      console.error('Failed to fetch groups:', error)
+      setGroups([])
+    }
+  }
 
   const fetchUsers = async () => {
     try {
@@ -35,7 +51,7 @@ const UserManager = ({ isDark }) => {
       } else {
         await api.post('/users', formData)
       }
-      setFormData({ email: '', password: '', role: 'user', user_group: 'admin' })
+      setFormData({ email: '', password: '', role: 'user', user_group: groups.length > 0 ? groups[0].name : '' })
       setShowCreateForm(false)
       setEditingUser(null)
       fetchUsers()
@@ -70,7 +86,7 @@ const UserManager = ({ isDark }) => {
   const handleCancel = () => {
     setShowCreateForm(false)
     setEditingUser(null)
-    setFormData({ email: '', password: '', role: 'user', user_group: 'admin' })
+    setFormData({ email: '', password: '', role: 'user', user_group: groups.length > 0 ? groups[0].name : '' })
   }
 
   return (
@@ -112,11 +128,14 @@ const UserManager = ({ isDark }) => {
               </div>
               <div>
                 <label className={`block text-sm font-semibold mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Group *</label>
-                <select value={formData.user_group} onChange={(e) => setFormData({ ...formData, user_group: e.target.value })} className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${isDark ? 'bg-gray-900 border-gray-700 text-white' : 'bg-white border-gray-300 text-gray-900'}`} required>
-                  <option value="admin">admin</option>
-                  <option value="senior">senior</option>
-                  <option value="junior">junior</option>
-                  <option value="DevOps">DevOps</option>
+                <select value={formData.user_group} onChange={(e) => setFormData({ ...formData, user_group: e.target.value })} className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${isDark ? 'bg-gray-900 border-gray-700 text-white' : 'bg-white border-gray-300 text-gray-900'}`} required disabled={groups.length === 0}>
+                  {groups.length === 0 ? (
+                    <option value="">No groups available</option>
+                  ) : (
+                    groups.map((group) => (
+                      <option key={group.id} value={group.name}>{group.name}</option>
+                    ))
+                  )}
                 </select>
               </div>
             </div>

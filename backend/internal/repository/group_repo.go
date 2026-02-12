@@ -75,3 +75,15 @@ func (r *GroupRepository) CountUsers(groupName string) (int, error) {
 	err := r.db.QueryRow(query, groupName).Scan(&count)
 	return count, err
 }
+
+func (r *GroupRepository) DeleteFolderPermissions(groupName string) error {
+	query := `DELETE FROM folder_permissions WHERE user_group = $1`
+	_, err := r.db.Exec(query, groupName)
+	return err
+}
+
+func (r *GroupRepository) DeleteDocumentPermissions(groupName string) error {
+	query := `DELETE FROM document_permissions WHERE user_group = $1`
+	_, err := r.db.Exec(query, groupName)
+	return err
+}
