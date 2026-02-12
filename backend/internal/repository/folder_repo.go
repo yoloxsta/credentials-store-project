@@ -89,3 +89,9 @@ func (r *FolderRepository) SetPermission(perm *models.FolderPermission) error {
 	return r.db.QueryRow(query, perm.FolderID, perm.UserGroup, 
 		perm.CanRead, perm.CanWrite, perm.CanDelete).Scan(&perm.ID)
 }
+
+func (r *FolderRepository) Delete(folderID int) error {
+	query := `DELETE FROM folders WHERE id = $1`
+	_, err := r.db.Exec(query, folderID)
+	return err
+}

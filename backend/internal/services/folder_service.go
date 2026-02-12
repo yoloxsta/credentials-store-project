@@ -94,3 +94,7 @@ func (s *FolderService) CheckPermission(folderID int, userGroup, role, action st
 		return false, nil
 	}
 }
+
+func (s *FolderService) Delete(folderID int) error {
+	return s.folderRepo.Delete(folderID)
+}

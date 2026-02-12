@@ -75,6 +75,7 @@ func main() {
 			folders.GET("", folderHandler.GetAll)
 			folders.POST("", middleware.AdminMiddleware(), folderHandler.Create)
 			folders.PUT("/:id/permissions", middleware.AdminMiddleware(), folderHandler.UpdatePermission)
+			folders.DELETE("/:id", middleware.AdminMiddleware(), folderHandler.Delete)
 		}
 
 		credentials := api.Group("/credentials")

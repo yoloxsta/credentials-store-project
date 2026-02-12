@@ -74,3 +74,18 @@ func (h *FolderHandler) UpdatePermission(c *gin.Context) {
 
 	c.JSON(http.StatusOK, perm)
 }
+
+func (h *FolderHandler) Delete(c *gin.Context) {
+	folderID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid folder id"})
+		return
+	}
+
+	if err := h.folderService.Delete(folderID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to delete folder"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "folder deleted successfully"})
+}
