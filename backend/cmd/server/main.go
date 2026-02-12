@@ -56,6 +56,7 @@ func main() {
 			auth.POST("/login", authHandler.Login)
 			// Signup only for admins
 			auth.POST("/signup", middleware.AuthMiddleware(), middleware.AdminMiddleware(), authHandler.Signup)
+			auth.PUT("/change-password", middleware.AuthMiddleware(), authHandler.ChangePassword)
 		}
 
 		// User management (admin only)

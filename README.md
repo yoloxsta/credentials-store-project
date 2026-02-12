@@ -13,6 +13,7 @@ A full-stack enterprise credential management application with advanced folder-b
 - 🔐 JWT-based authentication with secure token management
 - 🔒 AES-256 encryption for credential storage
 - 🔑 bcrypt password hashing (cost 10)
+- 🔄 User password change functionality with current password verification
 - 👥 Role-based access control (Admin/User)
 - 🛡️ Folder-based permission system with granular access control
 

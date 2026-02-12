@@ -127,3 +127,22 @@ func (s *AuthService) DeleteUser(id string) error {
 	}
 	return s.userRepo.Delete(userID)
 }
+
+func (s *AuthService) ChangePassword(userID int, currentPassword, newPassword string) error {
+	user, err := s.userRepo.FindByID(userID)
+	if err != nil {
+		return err
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(currentPassword)); err != nil {
+		return errors.New("current password is incorrect")
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	return s.userRepo.UpdatePassword(userID, string(hashedPassword))
+}
+

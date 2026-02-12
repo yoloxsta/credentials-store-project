@@ -5,6 +5,49 @@ All notable changes to the Credential Store project will be documented in this f
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-02-12
+
+### Added
+
+#### Change Password Feature
+- **User Password Management**
+  - Users can now change their own password from the dashboard
+  - Secure password change with current password verification
+  - New password must be at least 6 characters
+  - Password confirmation validation
+  - Real-time error feedback
+- **Backend Implementation**
+  - New `ChangePasswordRequest` model with validation
+  - `UpdatePassword` repository method for secure password updates
+  - `ChangePassword` service method with bcrypt verification
+  - `ChangePassword` handler with authentication check
+  - New API endpoint: `PUT /api/auth/change-password` (authenticated users only)
+- **Frontend Implementation**
+  - New `ChangePassword.jsx` modal component
+  - Key icon button in dashboard header for easy access
+  - Form validation for password matching and minimum length
+  - Toast notifications for success/error feedback
+  - Dark mode support
+- **Security**
+  - Current password verification before allowing change
+  - bcrypt hashing for new passwords
+  - JWT authentication required
+  - No admin privileges needed (users can change their own password)
+
+### Fixed
+- Fixed `.gitignore` issue that was excluding `main.go` file
+  - Changed `main` to `/main` to only ignore compiled binary in root
+  - Added `backend/cmd/server/main.go` to repository
+- Fixed authentication context key mismatch
+  - Middleware uses `user_id` (with underscore)
+  - Handler now correctly retrieves `user_id` instead of `userID`
+
+### Technical Details
+- Password validation: minimum 6 characters
+- Current password verification using bcrypt.CompareHashAndPassword
+- New password hashing using bcrypt.GenerateFromPassword with DefaultCost
+- Modal UI with responsive design and accessibility support
+
 ## [1.1.0] - 2026-02-11
 
 ### Added

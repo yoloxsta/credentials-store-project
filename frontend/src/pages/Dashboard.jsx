@@ -7,6 +7,7 @@ import CredentialList from '../components/CredentialList'
 import FolderManager from '../components/FolderManager'
 import UserManager from '../components/UserManager'
 import DocumentManager from '../components/DocumentManager'
+import ChangePassword from '../components/ChangePassword'
 import Toast from '../components/Toast'
 
 const Dashboard = () => {
@@ -20,6 +21,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('credentials')
   const [toast, setToast] = useState(null)
+  const [showChangePassword, setShowChangePassword] = useState(false)
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type })
@@ -144,6 +146,19 @@ const Dashboard = () => {
                   </span>
                 </div>
               </div>
+              <button
+                onClick={() => setShowChangePassword(true)}
+                className={`px-3 py-2 rounded-lg transition-colors duration-200 text-sm font-medium ${
+                  isDark 
+                    ? 'bg-gray-700 hover:bg-gray-600 text-white' 
+                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                }`}
+                title="Change Password"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                </svg>
+              </button>
               <button
                 onClick={logout}
                 className={`px-4 py-2 rounded-lg transition-colors duration-200 text-sm font-medium border ${
@@ -340,6 +355,13 @@ const Dashboard = () => {
             message={toast.message}
             type={toast.type}
             onClose={() => setToast(null)}
+          />
+        )}
+
+        {showChangePassword && (
+          <ChangePassword
+            onClose={() => setShowChangePassword(false)}
+            onSuccess={showToast}
           />
         )}
       </main>

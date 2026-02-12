@@ -68,3 +68,9 @@ func (r *UserRepository) Delete(id int) error {
 	_, err := r.db.Exec(query, id)
 	return err
 }
+
+func (r *UserRepository) UpdatePassword(userID int, hashedPassword string) error {
+	query := `UPDATE users SET password = $1 WHERE id = $2`
+	_, err := r.db.Exec(query, hashedPassword, userID)
+	return err
+}
