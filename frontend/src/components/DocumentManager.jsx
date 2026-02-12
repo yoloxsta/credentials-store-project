@@ -5,6 +5,7 @@ import api from '../services/api'
 const DocumentManager = ({ isDark, isAdmin }) => {
   const { user } = useAuth()
   const [documents, setDocuments] = useState([])
+  const [groups, setGroups] = useState([])
   const [showUploadForm, setShowUploadForm] = useState(false)
   const [selectedFile, setSelectedFile] = useState(null)
   const [description, setDescription] = useState('')
@@ -15,6 +16,7 @@ const DocumentManager = ({ isDark, isAdmin }) => {
 
   useEffect(() => {
     fetchDocuments()
+    fetchGroups()
   }, [])
 
   const fetchDocuments = async () => {
@@ -26,6 +28,16 @@ const DocumentManager = ({ isDark, isAdmin }) => {
       console.error('Failed to fetch documents:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchGroups = async () => {
+    try {
+      const response = await api.get('/groups')
+      setGroups(response.data || [])
+    } catch (error) {
+      console.error('Failed to fetch groups:', error)
+      setGroups([])
     }
   }
 
@@ -285,15 +297,15 @@ const DocumentManager = ({ isDark, isAdmin }) => {
                     {/* Show permissions */}
                     {editingPermissions?.id === doc.id ? (
                       <div className="mt-4 space-y-3">
-                        {['admin', 'senior', 'junior'].map((group) => (
-                          <div key={group} className={`rounded-lg p-3 border ${isDark ? 'bg-gray-900 border-gray-700' : 'bg-gray-50 border-gray-200'}`}>
-                            <h5 className={`text-sm font-semibold mb-2 capitalize ${isDark ? 'text-white' : 'text-gray-900'}`}>{group} Group</h5>
+                        {groups.map((group) => (
+                          <div key={group.id} className={`rounded-lg p-3 border ${isDark ? 'bg-gray-900 border-gray-700' : 'bg-gray-50 border-gray-200'}`}>
+                            <h5 className={`text-sm font-semibold mb-2 capitalize ${isDark ? 'text-white' : 'text-gray-900'}`}>{group.name} Group</h5>
                             <div className="flex gap-4">
                               <label className="flex items-center space-x-2 cursor-pointer">
                                 <input
                                   type="checkbox"
-                                  checked={permissions[group]?.can_view || false}
-                                  onChange={(e) => handlePermissionChange(group, 'can_view', e.target.checked)}
+                                  checked={permissions[group.name]?.can_view || false}
+                                  onChange={(e) => handlePermissionChange(group.name, 'can_view', e.target.checked)}
                                   className="w-4 h-4 text-blue-600 bg-gray-800 border-gray-600 rounded focus:ring-blue-500"
                                 />
                                 <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Can View</span>
@@ -301,8 +313,8 @@ const DocumentManager = ({ isDark, isAdmin }) => {
                               <label className="flex items-center space-x-2 cursor-pointer">
                                 <input
                                   type="checkbox"
-                                  checked={permissions[group]?.can_download || false}
-                                  onChange={(e) => handlePermissionChange(group, 'can_download', e.target.checked)}
+                                  checked={permissions[group.name]?.can_download || false}
+                                  onChange={(e) => handlePermissionChange(group.name, 'can_download', e.target.checked)}
                                   className="w-4 h-4 text-blue-600 bg-gray-800 border-gray-600 rounded focus:ring-blue-500"
                                 />
                                 <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Can Download</span>
