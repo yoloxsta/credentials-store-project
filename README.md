@@ -19,7 +19,7 @@ A full-stack enterprise credential management application with advanced folder-b
 
 ### User Management
 - 👨‍💼 Admin-only user creation and management
-- 📊 Three user groups: Admin, Senior, Junior
+- 📊 Dynamic user groups: Admin, Senior, Junior,etc.
 - 🚫 Public signup disabled for security
 - ✏️ Full CRUD operations for user accounts
 - 🎯 Group-based folder access permissions
