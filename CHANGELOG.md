@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### Custom Favicon
+- **Brand Identity**
+  - Replaced default Vite logo with custom lock icon favicon
+  - Blue-purple gradient design matching application theme
+  - SVG format for crisp display at all sizes
+  - Professional branding for browser tabs and bookmarks
+
 #### Dynamic Groups System
 - **Groups Management Tab** (Admin only)
   - Create, edit, and delete user groups dynamically
