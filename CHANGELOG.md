@@ -5,6 +5,33 @@ All notable changes to the Credential Store project will be documented in this f
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.1] - 2026-02-16
+
+### Added
+
+#### Copy to Clipboard Feature
+- **One-Click Copy Buttons**
+  - Copy username with single click
+  - Copy password with single click
+  - Visual feedback when copied (green checkmark + "Copied!" text)
+  - Auto-reset after 2 seconds
+  - Works with browser's native clipboard API
+- **User Experience**
+  - Copy icon buttons next to username and password fields
+  - Smooth transition animations
+  - Dark mode support
+  - Accessible with keyboard navigation
+- **Security**
+  - Clipboard cleared automatically after 2 seconds
+  - No server-side changes required
+  - Works entirely in browser
+
+### Technical Details
+- Uses `navigator.clipboard.writeText()` API
+- State management for visual feedback
+- Unique field IDs for tracking copied state
+- Fallback error handling for clipboard failures
+
 ## [1.3.0] - 2026-02-12
 
 ### Added

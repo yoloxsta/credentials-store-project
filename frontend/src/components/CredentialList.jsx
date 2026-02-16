@@ -2,9 +2,20 @@ import { useState } from 'react'
 
 const CredentialList = ({ credentials, onEdit, onDelete, isAdmin, isDark }) => {
   const [showPassword, setShowPassword] = useState({})
+  const [copiedField, setCopiedField] = useState(null)
 
   const togglePassword = (id) => {
     setShowPassword(prev => ({ ...prev, [id]: !prev[id] }))
+  }
+
+  const copyToClipboard = async (text, fieldId) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopiedField(fieldId)
+      setTimeout(() => setCopiedField(null), 2000)
+    } catch (err) {
+      console.error('Failed to copy:', err)
+    }
   }
 
   if (!credentials || credentials.length === 0) {
@@ -72,11 +83,42 @@ const CredentialList = ({ credentials, onEdit, onDelete, isAdmin, isDark }) => {
             <div className={`rounded-lg p-4 mb-3 border ${
               isDark ? 'bg-gray-900 border-gray-700' : 'bg-gray-50 border-gray-200'
             }`}>
-              <div className="mb-3">
-                <span className={`text-sm font-medium block mb-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Username:</span>
-                <code className={`font-mono text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                  {cred.username}
-                </code>
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <span className={`text-sm font-medium block mb-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Username:</span>
+                  <code className={`font-mono text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    {cred.username}
+                  </code>
+                </div>
+                <button
+                  onClick={() => copyToClipboard(cred.username, `username-${cred.id}`)}
+                  className={`ml-3 px-3 py-1.5 rounded-lg transition-all duration-200 text-sm font-medium border flex items-center space-x-2 ${
+                    copiedField === `username-${cred.id}`
+                      ? isDark
+                        ? 'bg-green-900 border-green-700 text-green-200'
+                        : 'bg-green-50 border-green-300 text-green-700'
+                      : isDark 
+                        ? 'bg-gray-800 hover:bg-gray-700 text-gray-300 border-gray-700' 
+                        : 'bg-white hover:bg-gray-50 text-gray-700 border-gray-300'
+                  }`}
+                  title="Copy username"
+                >
+                  {copiedField === `username-${cred.id}` ? (
+                    <>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>Copied!</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                      <span>Copy</span>
+                    </>
+                  )}
+                </button>
               </div>
             </div>
 
@@ -90,16 +132,47 @@ const CredentialList = ({ credentials, onEdit, onDelete, isAdmin, isDark }) => {
                     {showPassword[cred.id] ? cred.password : '••••••••••••'}
                   </code>
                 </div>
-                <button
-                  onClick={() => togglePassword(cred.id)}
-                  className={`px-3 py-1.5 rounded-lg transition-colors duration-200 text-sm font-medium border ${
-                    isDark 
-                      ? 'bg-gray-800 hover:bg-gray-700 text-gray-300 border-gray-700' 
-                      : 'bg-white hover:bg-gray-50 text-gray-700 border-gray-300'
-                  }`}
-                >
-                  {showPassword[cred.id] ? 'Hide' : 'Show'}
-                </button>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => copyToClipboard(cred.password, `password-${cred.id}`)}
+                    className={`px-3 py-1.5 rounded-lg transition-all duration-200 text-sm font-medium border flex items-center space-x-2 ${
+                      copiedField === `password-${cred.id}`
+                        ? isDark
+                          ? 'bg-green-900 border-green-700 text-green-200'
+                          : 'bg-green-50 border-green-300 text-green-700'
+                        : isDark 
+                          ? 'bg-gray-800 hover:bg-gray-700 text-gray-300 border-gray-700' 
+                          : 'bg-white hover:bg-gray-50 text-gray-700 border-gray-300'
+                    }`}
+                    title="Copy password"
+                  >
+                    {copiedField === `password-${cred.id}` ? (
+                      <>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>Copied!</span>
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        <span>Copy</span>
+                      </>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => togglePassword(cred.id)}
+                    className={`px-3 py-1.5 rounded-lg transition-colors duration-200 text-sm font-medium border ${
+                      isDark 
+                        ? 'bg-gray-800 hover:bg-gray-700 text-gray-300 border-gray-700' 
+                        : 'bg-white hover:bg-gray-50 text-gray-700 border-gray-300'
+                    }`}
+                  >
+                    {showPassword[cred.id] ? 'Hide' : 'Show'}
+                  </button>
+                </div>
               </div>
             </div>
 
