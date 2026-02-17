@@ -4,6 +4,8 @@ import { useTheme } from '../context/ThemeContext'
 import api from '../services/api'
 import CredentialForm from '../components/CredentialForm'
 import CredentialList from '../components/CredentialList'
+import ServiceForm from '../components/ServiceForm'
+import ServiceList from '../components/ServiceList'
 import FolderManager from '../components/FolderManager'
 import UserManager from '../components/UserManager'
 import DocumentManager from '../components/DocumentManager'
@@ -15,6 +17,7 @@ const Dashboard = () => {
   const { user, logout } = useAuth()
   const { isDark, toggleTheme } = useTheme()
   const [credentials, setCredentials] = useState([])
+  const [services, setServices] = useState([])
   const [folders, setFolders] = useState([])
   const [selectedFolder, setSelectedFolder] = useState(null)
   const [showForm, setShowForm] = useState(false)
@@ -24,6 +27,8 @@ const Dashboard = () => {
   const [toast, setToast] = useState(null)
   const [showChangePassword, setShowChangePassword] = useState(false)
   const [showProfileMenu, setShowProfileMenu] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [serviceSearchQuery, setServiceSearchQuery] = useState('')
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type })
@@ -96,8 +101,93 @@ const Dashboard = () => {
   }
 
   const filteredCredentials = selectedFolder 
-    ? credentials.filter(cred => cred.folder_id === selectedFolder.id)
+    ? credentials.filter(cred => {
+        const matchesFolder = cred.folder_id === selectedFolder.id
+        const matchesSearch = searchQuery === '' || 
+          cred.service_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          cred.username?.toLowerCase().includes(searchQuery.toLowerCase())
+        return matchesFolder && matchesSearch
+      })
     : []
+
+  // Service Management
+  const [showServiceForm, setShowServiceForm] = useState(false)
+  const [editingService, setEditingService] = useState(null)
+
+  const fetchServices = async () => {
+    try {
+      const response = await api.get('/services')
+      setServices(response.data || [])
+    } catch (error) {
+      console.error('Failed to fetch services:', error)
+    }
+  }
+
+  useEffect(() => {
+    if (activeTab === 'services') {
+      fetchServices()
+    }
+  }, [activeTab])
+
+  const handleServiceCreate = () => {
+    setEditingService(null)
+    setShowServiceForm(true)
+  }
+
+  const handleServiceEdit = (service) => {
+    setEditingService(service)
+    setShowServiceForm(true)
+  }
+
+  const handleServiceDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this service?')) return
+
+    try {
+      await api.delete(`/services/${id}`)
+      showToast('Service deleted successfully!', 'success')
+      fetchServices()
+    } catch (error) {
+      showToast('Failed to delete service', 'error')
+    }
+  }
+
+  const handleServiceFormClose = async (formData) => {
+    if (!formData) {
+      setShowServiceForm(false)
+      setEditingService(null)
+      return
+    }
+
+    try {
+      const payload = {
+        ...formData,
+        folder_id: formData.folder_id ? parseInt(formData.folder_id) : null,
+        port: formData.port ? parseInt(formData.port) : 0
+      }
+
+      if (editingService) {
+        await api.put(`/services/${editingService.id}`, payload)
+        showToast('✏️ Service updated successfully!', 'success')
+      } else {
+        await api.post('/services', payload)
+        showToast('✨ Service created successfully!', 'success')
+      }
+      fetchServices()
+    } catch (error) {
+      showToast('Failed to save service', 'error')
+    } finally {
+      setShowServiceForm(false)
+      setEditingService(null)
+    }
+  }
+
+  const filteredServices = services.filter(service => {
+    if (serviceSearchQuery === '') return true
+    return service.service_name?.toLowerCase().includes(serviceSearchQuery.toLowerCase()) ||
+           service.hostname?.toLowerCase().includes(serviceSearchQuery.toLowerCase()) ||
+           service.ip_address?.toLowerCase().includes(serviceSearchQuery.toLowerCase()) ||
+           service.description?.toLowerCase().includes(serviceSearchQuery.toLowerCase())
+  })
 
   return (
     <div className={`min-h-screen ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
@@ -288,6 +378,23 @@ const Dashboard = () => {
               <span>Documents</span>
             </div>
           </button>
+          <button
+            onClick={() => setActiveTab('services')}
+            className={`flex-1 px-6 py-3 rounded-lg font-medium transition-all duration-200 text-sm ${
+              activeTab === 'services' 
+                ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg' 
+                : isDark 
+                  ? 'text-gray-400 hover:text-white hover:bg-gray-700'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+            }`}
+          >
+            <div className="flex items-center justify-center space-x-2">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
+              </svg>
+              <span>Services</span>
+            </div>
+          </button>
           {user?.role === 'admin' && (
             <>
               <button
@@ -381,13 +488,23 @@ const Dashboard = () => {
             </div>
 
             <div className="flex justify-between items-center mb-6">
-              <div>
-                <h2 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                  {selectedFolder ? selectedFolder.name : 'Credentials'}
-                </h2>
-                <p className={`text-sm mt-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                  {selectedFolder ? `Manage ${selectedFolder.name} environment credentials` : 'Select an environment'}
-                </p>
+              <div className="flex-1 max-w-md mr-4">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Search credentials..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className={`w-full px-4 py-3 pl-11 rounded-lg border transition-colors ${
+                      isDark 
+                        ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-blue-500' 
+                        : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-blue-500'
+                    } focus:outline-none focus:ring-2 focus:ring-blue-500/20`}
+                  />
+                  <svg className={`absolute left-3 top-3.5 w-5 h-5 ${isDark ? 'text-gray-500' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
               </div>
               {user?.role === 'admin' && (
                 <button
@@ -425,6 +542,49 @@ const Dashboard = () => {
           <DocumentManager isDark={isDark} isAdmin={user?.role === 'admin'} />
         )}
 
+        {activeTab === 'services' && (
+          <>
+            <div className="flex justify-between items-center mb-6">
+              <div className="flex-1 max-w-md mr-4">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Search services..."
+                    value={serviceSearchQuery}
+                    onChange={(e) => setServiceSearchQuery(e.target.value)}
+                    className={`w-full px-4 py-3 pl-11 rounded-lg border transition-colors ${
+                      isDark 
+                        ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-green-500' 
+                        : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-green-500'
+                    } focus:outline-none focus:ring-2 focus:ring-green-500/20`}
+                  />
+                  <svg className={`absolute left-3 top-3.5 w-5 h-5 ${isDark ? 'text-gray-500' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+              </div>
+              {user?.role === 'admin' && (
+                <button
+                  onClick={handleServiceCreate}
+                  className="bg-gradient-to-r from-green-600 to-teal-500 text-white px-6 py-3 rounded-lg hover:from-green-500 hover:to-teal-400 transition-all duration-200 font-semibold shadow-lg shadow-green-500/50 flex items-center space-x-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  <span>Add Service</span>
+                </button>
+              )}
+            </div>
+            <ServiceList
+              services={filteredServices}
+              onEdit={handleServiceEdit}
+              onDelete={handleServiceDelete}
+              isAdmin={user?.role === 'admin'}
+              isDark={isDark}
+            />
+          </>
+        )}
+
         {activeTab === 'folders' && user?.role === 'admin' && (
           <FolderManager folders={folders} onUpdate={fetchFolders} isDark={isDark} />
         )}
@@ -458,6 +618,15 @@ const Dashboard = () => {
           <ChangePassword
             onClose={() => setShowChangePassword(false)}
             onSuccess={showToast}
+          />
+        )}
+
+        {showServiceForm && (
+          <ServiceForm
+            service={editingService}
+            folders={folders}
+            onClose={handleServiceFormClose}
+            isDark={isDark}
           />
         )}
       </main>

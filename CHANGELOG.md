@@ -5,6 +5,113 @@ All notable changes to the Credential Store project will be documented in this f
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-02-17
+
+### Added
+
+#### Services/Infrastructure Management
+- **Services Tab** - Track and manage servers and infrastructure
+  - Service name, hostname, IP address, port, and description
+  - Optional folder assignment for organization
+  - Copy-to-clipboard for hostname and IP address
+  - Admin-only create/edit/delete operations
+  - All users can view services based on folder permissions
+- **Backend Implementation**
+  - New `services` table with migration `008_add_services.sql`
+  - Full CRUD API: POST/GET/PUT/DELETE `/api/services`
+  - `ServiceRepository` with optimized queries (no duplicate results)
+  - `ServiceService` for business logic
+  - `ServiceHandler` for HTTP endpoints
+  - Permission-based access using folder permissions
+- **Frontend Implementation**
+  - New `ServiceList.jsx` component with modern card design
+  - New `ServiceForm.jsx` for creating/editing services
+  - Services tab in Dashboard
+  - Copy buttons for hostname and IP address
+  - Visual feedback on copy (green checkmark + "Copied!")
+  - Dark mode support
+  - Server icon with green gradient theme
+- **Query Optimization**
+  - Fixed duplicate service results from JOIN queries
+  - Changed from LEFT JOIN to EXISTS subquery for better performance
+  - Ensures each service appears only once in results
+
+#### Search Functionality
+- **Credentials Search**
+  - Real-time search bar in Credentials tab
+  - Filters by service name or username
+  - Case-insensitive search
+  - Magnifying glass icon
+  - Blue focus ring
+- **Services Search**
+  - Real-time search bar in Services tab
+  - Filters by service name, hostname, IP address, or description
+  - Case-insensitive search
+  - Magnifying glass icon
+  - Green focus ring
+- **User Experience**
+  - Instant filtering as you type
+  - Search persists while navigating within tab
+  - Clear visual design with icons
+  - Responsive layout
+  - Dark mode support
+
+### Changed
+- **Profile Menu Enhancement**
+  - Moved from inline display to dropdown menu
+  - Avatar circle shows first letter of username
+  - Click avatar to open dropdown menu
+  - Dropdown shows: full email, role badge, group badge
+  - "Change Password" option in dropdown
+  - "Sign Out" button in dropdown
+  - Click outside to close menu
+  - Smooth animations and transitions
+  - Better use of header space
+
+### Fixed
+- **Service Query Duplicates**
+  - Fixed duplicate services appearing when folder has multiple permissions
+  - Changed from `LEFT JOIN folder_permissions` to `EXISTS` subquery
+  - Ensures each service appears exactly once
+  - Improved query performance
+- **Docker Build Caching**
+  - Fixed frontend not rebuilding with code changes
+  - Added `--no-cache` flag for clean builds
+  - Improved deployment reliability
+
+### Technical Details
+- Services table: id, service_name, hostname, ip_address, port, description, user_id, folder_id, created_at, updated_at
+- Search uses JavaScript `.filter()` with `.toLowerCase().includes()`
+- Service queries use `EXISTS` instead of `JOIN` to prevent duplicates
+- Copy functionality uses `navigator.clipboard.writeText()` API
+- Search state managed with React `useState` hooks
+- Profile dropdown uses click-outside detection
+
+### Migration Notes
+- **For Existing Databases**: Run migration 008 manually:
+  ```sql
+  CREATE TABLE IF NOT EXISTS services (
+      id SERIAL PRIMARY KEY,
+      service_name VARCHAR(255) NOT NULL,
+      hostname VARCHAR(255),
+      ip_address VARCHAR(45),
+      port INTEGER DEFAULT 0,
+      description TEXT,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      folder_id INTEGER REFERENCES folders(id) ON DELETE SET NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
+  ```
+- **For New Deployments**: Migration runs automatically on first startup
+
+### Use Cases
+- **Services Management**: Track production servers, databases, APIs, microservices
+- **Infrastructure Documentation**: Maintain inventory of all infrastructure
+- **Quick Access**: Copy hostnames and IPs for SSH, database connections, API calls
+- **Team Collaboration**: Share server information with team based on folder permissions
+- **Search**: Quickly find servers by name, hostname, IP, or description
+
 ## [1.3.1] - 2026-02-16
 
 ### Added

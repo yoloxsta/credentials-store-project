@@ -19,7 +19,8 @@ A full-stack enterprise credential management application with advanced folder-b
 
 ### User Management
 - 👨‍💼 Admin-only user creation and management
-- 📊 Dynamic user groups: Admin, Senior, Junior,etc.
+- 📊 Dynamic user groups (fully customizable - add DevOps, QA, Intern, etc.)
+- 🎯 Groups Management tab for creating/editing/deleting groups
 - 🚫 Public signup disabled for security
 - ✏️ Full CRUD operations for user accounts
 - 🎯 Group-based folder access permissions
@@ -31,6 +32,17 @@ A full-stack enterprise credential management application with advanced folder-b
 - ✍️ Admin-only create/edit/delete operations
 - 🔍 Folder-based filtering and organization
 - 📋 Username and password display with show/hide toggle
+- 📋 One-click copy to clipboard for usernames and passwords
+- 🔎 Real-time search by service name or username
+
+### Services/Infrastructure Management
+- 🖥️ Track servers, databases, APIs, and infrastructure
+- 🌐 Store hostname, IP address, port, and description
+- 📋 One-click copy to clipboard for hostnames and IPs
+- 📁 Optional folder assignment for organization
+- 🔎 Real-time search by name, hostname, IP, or description
+- 👥 Permission-based access using folder permissions
+- ✍️ Admin-only create/edit/delete operations
 
 ### Document Management System
 - 📄 File upload and storage (admin-only upload)
@@ -49,7 +61,9 @@ A full-stack enterprise credential management application with advanced folder-b
 - 💫 Modern gradient design with smooth animations
 - 📱 Responsive layout
 - 🎯 Intuitive navigation with tab-based interface
+- 👤 Dropdown profile menu with user info and quick actions
 - ✅ Toast notifications for user actions
+- 🔎 Real-time search functionality for credentials and services
 - 🎭 Enterprise-grade professional design
 
 ### Technical Features

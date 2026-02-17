@@ -39,18 +39,21 @@ func main() {
 	folderRepo := repository.NewFolderRepository(db)
 	documentRepo := repository.NewDocumentRepository(db)
 	groupRepo := repository.NewGroupRepository(db)
+	serviceRepo := repository.NewServiceRepository(db)
 
 	authService := services.NewAuthService(userRepo)
 	encryptionService := services.NewEncryptionService()
 	credService := services.NewCredentialService(credRepo, encryptionService)
 	folderService := services.NewFolderService(folderRepo)
 	groupService := services.NewGroupService(groupRepo)
+	serviceService := services.NewServiceService(serviceRepo)
 
 	authHandler := handlers.NewAuthHandler(authService)
 	credHandler := handlers.NewCredentialHandler(credService)
 	folderHandler := handlers.NewFolderHandler(folderService)
 	documentHandler := handlers.NewDocumentHandler(documentRepo)
 	groupHandler := handlers.NewGroupHandler(groupService)
+	serviceHandler := handlers.NewServiceHandler(serviceService)
 
 	api := r.Group("/api")
 	{
@@ -111,6 +114,16 @@ func main() {
 			documents.GET("/:id/download", documentHandler.Download)
 			documents.PUT("/:id/permissions", middleware.AdminMiddleware(), documentHandler.UpdatePermission)
 			documents.DELETE("/:id", middleware.AdminMiddleware(), documentHandler.Delete)
+		}
+
+		servicesGroup := api.Group("/services")
+		servicesGroup.Use(middleware.AuthMiddleware())
+		{
+			servicesGroup.POST("", middleware.AdminMiddleware(), serviceHandler.Create)
+			servicesGroup.GET("", serviceHandler.GetAll)
+			servicesGroup.GET("/:id", serviceHandler.GetByID)
+			servicesGroup.PUT("/:id", middleware.AdminMiddleware(), serviceHandler.Update)
+			servicesGroup.DELETE("/:id", middleware.AdminMiddleware(), serviceHandler.Delete)
 		}
 	}
 
