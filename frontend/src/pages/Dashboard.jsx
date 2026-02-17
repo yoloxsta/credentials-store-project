@@ -23,6 +23,7 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('credentials')
   const [toast, setToast] = useState(null)
   const [showChangePassword, setShowChangePassword] = useState(false)
+  const [showProfileMenu, setShowProfileMenu] = useState(false)
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type })
@@ -132,44 +133,117 @@ const Dashboard = () => {
                   </svg>
                 )}
               </button>
-              <div className="text-right">
-                <p className={`text-sm font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{user?.email}</p>
-                <div className="flex items-center justify-end space-x-2">
-                  <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                    isDark ? 'bg-blue-900 text-blue-200' : 'bg-blue-100 text-blue-800'
-                  }`}>
-                    {user?.role}
+              
+              {/* Profile Dropdown */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowProfileMenu(!showProfileMenu)}
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-xl border transition-all duration-200 ${
+                    isDark 
+                      ? 'bg-gray-800 border-gray-700 hover:border-gray-600' 
+                      : 'bg-white border-gray-200 hover:border-gray-300 shadow-sm'
+                  }`}
+                >
+                  {/* Avatar */}
+                  <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="text-white font-bold text-sm">
+                      {user?.email?.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                  
+                  {/* Username only */}
+                  <span className={`text-sm font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    {user?.email?.split('@')[0]}
                   </span>
-                  <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                    isDark ? 'bg-purple-900 text-purple-200' : 'bg-purple-100 text-purple-800'
-                  }`}>
-                    {user?.user_group}
-                  </span>
-                </div>
+
+                  {/* Dropdown Arrow */}
+                  <svg 
+                    className={`w-4 h-4 transition-transform duration-200 ${
+                      showProfileMenu ? 'rotate-180' : ''
+                    } ${isDark ? 'text-gray-400' : 'text-gray-500'}`} 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                {/* Dropdown Menu */}
+                {showProfileMenu && (
+                  <>
+                    {/* Backdrop to close menu */}
+                    <div 
+                      className="fixed inset-0 z-10" 
+                      onClick={() => setShowProfileMenu(false)}
+                    />
+                    
+                    <div className={`absolute right-0 mt-2 w-64 rounded-xl shadow-lg border z-20 ${
+                      isDark 
+                        ? 'bg-gray-800 border-gray-700' 
+                        : 'bg-white border-gray-200'
+                    }`}>
+                      {/* User Info Header */}
+                      <div className={`px-4 py-3 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
+                        <p className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                          {user?.email}
+                        </p>
+                        <div className="flex items-center space-x-2 mt-1">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${
+                            isDark ? 'bg-blue-900/50 text-blue-200' : 'bg-blue-100 text-blue-700'
+                          }`}>
+                            {user?.role}
+                          </span>
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${
+                            isDark ? 'bg-purple-900/50 text-purple-200' : 'bg-purple-100 text-purple-700'
+                          }`}>
+                            {user?.user_group}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Menu Items */}
+                      <div className="py-2">
+                        <button
+                          onClick={() => {
+                            setShowChangePassword(true)
+                            setShowProfileMenu(false)
+                          }}
+                          className={`w-full px-4 py-2.5 text-left flex items-center space-x-3 transition-colors ${
+                            isDark 
+                              ? 'hover:bg-gray-700 text-gray-300' 
+                              : 'hover:bg-gray-50 text-gray-700'
+                          }`}
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                          </svg>
+                          <span className="text-sm font-medium">Change Password</span>
+                        </button>
+
+                        <div className={`my-1 border-t ${isDark ? 'border-gray-700' : 'border-gray-200'}`} />
+
+                        <button
+                          onClick={() => {
+                            logout()
+                            setShowProfileMenu(false)
+                          }}
+                          className={`w-full px-4 py-2.5 text-left flex items-center space-x-3 transition-colors ${
+                            isDark 
+                              ? 'hover:bg-red-900/30 text-red-300' 
+                              : 'hover:bg-red-50 text-red-600'
+                          }`}
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                          </svg>
+                          <span className="text-sm font-medium">Sign Out</span>
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
-              <button
-                onClick={() => setShowChangePassword(true)}
-                className={`px-3 py-2 rounded-lg transition-colors duration-200 text-sm font-medium ${
-                  isDark 
-                    ? 'bg-gray-700 hover:bg-gray-600 text-white' 
-                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                }`}
-                title="Change Password"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-                </svg>
-              </button>
-              <button
-                onClick={logout}
-                className={`px-4 py-2 rounded-lg transition-colors duration-200 text-sm font-medium border ${
-                  isDark 
-                    ? 'bg-gray-700 hover:bg-gray-600 text-white border-gray-600' 
-                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border-gray-300'
-                }`}
-              >
-                Sign Out
-              </button>
             </div>
           </div>
         </div>
