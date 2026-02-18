@@ -8,15 +8,49 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
 
+  // Check token expiration
+  const checkTokenExpiration = () => {
+    const token = localStorage.getItem('token')
+    if (!token) return false
+
+    try {
+      // Decode JWT token (simple base64 decode of payload)
+      const payload = JSON.parse(atob(token.split('.')[1]))
+      const expirationTime = payload.exp * 1000 // Convert to milliseconds
+      const currentTime = Date.now()
+
+      if (currentTime >= expirationTime) {
+        // Token expired, logout
+        logout()
+        return false
+      }
+      return true
+    } catch (error) {
+      console.error('Error checking token expiration:', error)
+      logout()
+      return false
+    }
+  }
+
   useEffect(() => {
     const token = localStorage.getItem('token')
     const userData = localStorage.getItem('user')
     
     if (token && userData) {
-      setUser(JSON.parse(userData))
-      api.defaults.headers.common['Authorization'] = `Bearer ${token}`
+      // Check if token is still valid
+      if (checkTokenExpiration()) {
+        setUser(JSON.parse(userData))
+        api.defaults.headers.common['Authorization'] = `Bearer ${token}`
+      }
     }
     setLoading(false)
+
+    // Check token expiration every minute
+    const interval = setInterval(() => {
+      checkTokenExpiration()
+    }, 60000) // 60 seconds
+
+    return () => clearInterval(interval)
   }, [])
 
   const login = async (email, password) => {

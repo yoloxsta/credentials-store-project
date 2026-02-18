@@ -74,7 +74,7 @@ func (s *AuthService) GenerateToken(user *models.User) (string, error) {
 		"email":      user.Email,
 		"role":       user.Role,
 		"user_group": user.UserGroup,
-		"exp":        time.Now().Add(time.Hour * 24).Unix(),
+		"exp":        time.Now().Add(time.Hour * 1).Unix(), // 1 hour expiration for security
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
