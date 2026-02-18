@@ -74,8 +74,7 @@ const DocumentManager = ({ isDark, isAdmin }) => {
   const handleDownload = async (id, filename) => {
     try {
       const token = localStorage.getItem('token')
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080/api'
-      const url = `${apiUrl}/documents/${id}/download?token=${token}`
+      const url = `http://localhost:8080/api/documents/${id}/download?token=${token}`
       
       // Simply open the URL - backend will redirect to S3 presigned URL
       window.open(url, '_blank')
@@ -155,8 +154,7 @@ const DocumentManager = ({ isDark, isAdmin }) => {
   const handleView = (id) => {
     // Open document in new tab for viewing
     const token = localStorage.getItem('token')
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080/api'
-    const url = `${apiUrl}/documents/${id}/view`
+    const url = `http://localhost:8080/api/documents/${id}/view`
     window.open(url + `?token=${token}`, '_blank')
   }
 
